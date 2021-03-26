@@ -1,0 +1,428 @@
+from .. import mongo
+from werkzeug.security import check_password_hash,generate_password_hash
+import secrets
+from . import make_response,jsonify,id_generator
+import itertools
+
+Member = mongo.db.Member
+Project = mongo.db.Project
+Token = mongo.db.Token
+Application = mongo.db.Application
+Project = mongo.db.Project
+Task = mongo.db.Task
+
+
+
+
+'''
+    delte all the generated Tokens
+'''
+def _deleteTokens():
+    Token.delete_many({})
+
+'''
+    delete all the members
+'''
+def _deleteMembers():
+    Member.delete_many({})
+'''
+generate store and delete token
+'''
+
+def _storeToken(token,division):
+    to = Token.insert_one({'token':token,'Division':division})
+    if to.inserted_id:
+        res = {'token':token,'Division':division}
+        return make_response(jsonify(res),200)
+    else:
+        # return 500 if it is not generated
+        return make_response(jsonify({}),500)
+
+'''
+get the division based on information given by the token
+
+'''
+def _get_division(token):
+    token = Token.find_one({'token':token})
+    return token['Division']
+
+def _listToken():
+    tokens = Token.find({})
+    tokens = [{'token':x['token'],'Division':x['Division']} for x in tokens]
+    res = make_response(jsonify({'tokens':tokens}),200)
+    return res
+
+
+
+# response should is 500 if no token has been deleted
+def _deleteToken(token):
+    delete_token = Token.delete_one({'token':token})
+    if delete_token.deleted_count>0:
+        res = make_response(jsonify({'message':'token has beend delted'}),200)
+        return res
+    else:
+        return make_response(jsonify({}),500)
+
+'''
+    ******************
+    register new members and login
+    ******************
+'''
+
+def _register_member(data):
+    num = Member.find({"username":data["username"]}).count()
+    if(num>0):
+        return {
+            "message":'username already exit'
+        }
+    else:
+        data['password'] = generate_password_hash(data['password'])
+    token = Token.find_one({'token':data['token']})
+    if token:
+        user_id = id_generator(12)
+        members = Member.find({'user_id':user_id}).count()
+        while members != 0:
+            user_id = id_generator(12)
+            members = Member.find({'user_id':user_id}).count()
+
+
+        data['user_id'] = user_id
+        data['Division'] = _get_division(data['token'])
+        register_member = Member.insert_one(data)
+
+        if register_member.inserted_id:
+            msg = {'message':'succesfully registerd'}
+            token = Token.delete_one({'token':data['token']})
+            return make_response(jsonify(msg),200)
+        else:  
+            msg = {"message":"Error registering the user"} 
+            return make_response(jsonify(msg),500)
+    else:
+        msg = {'message':"invalid token"}
+        return make_response(jsonify(msg),401)
+
+
+
+def _list_members():
+    members = Member.find({})
+    subset = ['password','_id','token']
+    members = [{key:str(value) for key,value in member.items() if key not in subset}  for member in members]
+    res = make_response(jsonify({'members':members}),200)
+    return res
+
+def _member_information(user_id):
+    info = Member.find_one({'user_id':user_id})
+    if info:
+        subset = ['password','token']
+        info = [{key:str(value) for key,value in info.items() if key not in subset}]
+        return make_response(jsonify(info),200)
+    else:
+        msg = {'message':"user name doesn't exist"}
+        return make_response(jsonify(msg),404)
+
+def _delete_member(user_id):
+    d_member = Member.delete_one({'user_id':user_id})
+    if d_member.deleted_count>0:
+        res = make_response(jsonify({'message':'Member has beend deleted'}),200)
+        return res
+    else:
+        msg = {'message':"username doesn't exist"}
+        return make_response(jsonify(msg),404)
+
+
+def _update_information(data,user_id):
+    if data.get('password') != None:
+        data['password'] = generate_password_hash(data['password'])
+    update_member = Member.update_one(
+        {'user_id':user_id},
+        {"$set":data}
+    )
+    if update_member.matched_count>0:
+        msg = {"message":"information has been updated succesfuly"}
+        return make_response(jsonify(msg),200)
+    else:
+        msg = {"message":"username doesn't exist"}
+        return make_response(jsonify(msg),500)
+
+mapper = {
+    0:'intern',
+    1:'Regular member',
+    2:'Team Leader',
+    3:'Alumni',
+    4:'Admin'
+}
+
+def _change_role(data):
+    #  change the string role in to an integer
+    data['Role'] = int (data['Role'])
+    # check if the given role exists inside the database
+
+    if data['Role'] not in range(0,5):
+        msg = {"message": "invalid Role"}
+        return make_response(jsonify(msg),400)
+
+    member = Member.find_one({"user_id":data['user_id']})
+
+    if not member:
+        msg = {"message":"invalid user_id"}
+        return make_response(jsonify(msg),404)
+
+    if data['Role'] == 2:
+        update_member = Member.update_one(
+            {
+                'Role':2,
+                'Division':member['Division']
+            },
+            {"$set":{'Role':1}}
+        )
+        update_member = Member.update_one(
+            {'user_id':data['user_id']},
+            {"$set":{'Role':2}}
+        )
+        if update_member.matched_count>0:
+            msg = {'message':"Role has been changed succesfully"}
+            return make_response(jsonify(msg),200)
+        else:
+            msg = {"message":"unkown error occured please try agai"}
+            return make_response(jsonify(msg),500)
+    else:
+        update_member = Member.update_one(
+            {'user_id':data['user_id']},
+            {"$set":{'Role':data['Role']}}
+        )
+
+        if update_member.matched_count>0:
+            msg = {'message':"Role has been changed succesfully"}
+            return make_response(jsonify(msg),200)
+        else:
+            msg = {"message":"unkown error occured please try again"}
+            return make_response(jsonify(msg),500)
+
+def _submit_application(data):
+    inserted_application = Application.insert_one(data)
+    if inserted_application.inserted_id:
+        msg = {"message":"file has been saved succesfully"}
+        return make_response(jsonify(msg),200)
+    else:
+        msg = {"message":"unknow internal server error"}
+        return make_response(jsonify(msg),500)
+
+def _get_applicants():
+    applicants = Application.find({}).sort("_id", -1)
+    applicants = [x for x in applicants]
+    subset = ['_id']
+    applicants = [{key:value for key,value in app.items() if key not in subset} for app in applicants]
+    return make_response(jsonify({'applicants':applicants}),200)
+
+def _add_suggestion(data):
+    app = Application.find_one({'id':data['id']})   
+    if app == None:
+        msg = {'message':"error applicant id cant be found"}
+        return make_response(jsonify(msg),404)
+    #  retrive the username
+    app = Application.update_one(
+        {"id":data["id"]},
+        {"$push":{'suggestion':{data['user_id']:data['suggestion']}}}
+    )
+    if app.matched_count > 0:
+        msg = {"message":"suggestion has been added"}
+        return make_response(jsonify(msg),200)
+    else:
+        msg = {"message":"unknow error "}
+        return make_response(jsonify(msg),500) 
+
+def _delete_all_applicanats():
+    Application.delete_many({})
+
+'''
+create Project
+'''
+
+def _delete_allProjects():
+    Project.delete_many({})
+    Task.delete_many({})
+
+def random_generator(collection_name,searching_query,size=10):
+    code = id_generator(size)
+    num = collection_name.find_one({searching_query:code})
+
+    while num:
+        code = id_generator(size)
+        num = collection_name.find_one({searching_query:code})
+    return code
+
+def _create_project(data):
+    project_code = random_generator(Project,'project_code',10)
+
+    division = Member.find_one({"user_id":data["user_id"]})["Division"]
+
+    project = {
+        "project_code":project_code,
+        "project title":data["project tittle"],
+        "Division":division,
+        "team_members":data["members"],
+        "progress":0,
+        'github':data['github_link'],
+        'docks':data['docks_link']
+    }
+
+    inserted_project = Project.insert_one(project)
+    if not inserted_project:
+        msg = {"message":"error creating the project"}
+        return make_response(jsonify(msg),500)
+    tasks = []
+    task_scheme = {
+        "task":"",
+        "project_code":project_code,
+        "completed":False
+    }
+    for t in data["tasks"]:
+        task_scheme['task'] = t
+        task_scheme['task_code'] = random_generator(Task,'task_code')
+        tasks.append(task_scheme.copy())
+    Task.insert_many(tasks)
+    msg = {"message":"Project has been added successfully"}
+    return make_response(jsonify(msg),200)
+
+def _get_all_projects():
+    projects = Project.find({})
+    subset = ['_id']
+    data = []
+    for project in projects:
+        pro = {}
+        for k,v in project.items():
+             if k not in subset:
+                 pro [k] = v
+        
+        tasks = Task.find({"project_code":pro.get('project_code')})
+        tasks = [{k:str(v) for k,v in task.items()} for task in tasks]
+
+        pro['tasks'] = tasks
+        data.append(pro)
+
+    # print(data)
+    return make_response(jsonify({"projects":data}),200)
+
+def _get_project(project_code):
+    subset = ['id']
+    project = Project.find_one({'project_code':project_code})
+    
+    if not project:
+        msg = {"message":"invalid project code"}
+        return make_response(jsonify(msg),404)
+    
+    project['_id'] = str(project.get('_id'))
+
+    if not project:
+        msg = {"message":"invalid project code"}
+        return make_response(jsonify(msg),404)
+    tasks = Task.find({"project_code":project_code})
+    tasks = [{k:str(v) for k,v in task.items()} for task in tasks]
+    project['tasks'] = tasks
+    return make_response(jsonify({"project":project}),200)
+
+def _delete_project(project_code):
+    project = Project.find_one({'project_code':project_code})
+    if not project:
+        msg = {"message":"invalid project code"}
+        return make_response(jsonify(msg),404)
+
+    project = Project.delete_one({'project_code':project_code})
+    task = Task.delete_many({'project_code':project_code})
+    return "Project has been succesfully delted",200
+
+'''
+    when task is completed 
+    updare the progress
+'''
+
+def _calc_persentage(project_code):
+
+    num_completed = Task.find({'project_code':project_code,'completed':True}).count()
+    total = Task.find({'project_code':project_code}).count()
+
+    progress = num_completed/total *100
+
+    update_project = Project.update_one(
+        {"project_code":project_code},
+        {
+            "$set":{
+               "progress": progress,
+            }
+        }
+    )
+
+    pass
+
+def _completeTask(task_code):
+    
+    task  = Task.find_one({"task_code":task_code})
+
+    if not task:
+        msg = {"message":"invalid task code was provided"}
+        return make_response(jsonify(msg),404)
+    
+    updated_task = Task.update_one(
+        {"task_code":task_code},
+        {
+            "$set":{
+               "completed": not task["completed"],
+            }
+        }
+    )
+    
+    _calc_persentage(task['project_code'])
+    msg = {"message":"task is updated succesfully"}
+    return make_response(jsonify(msg),200)
+
+def _addTask(data):
+    project = Project.find_one({'project_code':data['project_code']})
+    if not project:
+        msg = {"messge":"project doesn't exist"}
+        return make_response(jsonify(msg),404)
+    task = {
+        "task":data['task'],
+        "project_code":data['project_code'],
+        "completed":False
+        }
+    task['task_code'] = random_generator(Task,'task_code')
+    Task.insert_one(task)
+    msg = {"message":"task has been successfully added"}
+    return make_response(jsonify(msg),200)
+
+def _deleteTask(task_code):
+    d_task = Task.delete_one({'task_code':task_code})
+    if d_task.deleted_count == 0:
+
+        msg = {"message":"no task has been deleted"}
+        return make_response(jsonify(msg),400)
+    msg = {"message":"task has been successfully added"}
+    return make_response(jsonify(msg),200)
+    
+def _rename_task(data):
+    u_task = Task.update_one(
+        {"task_code":data['task_code']},
+        {
+            "$set":{"task":data['task']}
+        }
+    )
+    if u_task.matched_count>0:
+        msg = {"message":"task has been renamed succesfully"}
+        return make_response(jsonify(msg),200)
+
+    msg = {"message":"invalid task code"}
+    return make_response(jsonify(msg),400)
+
+def _rename_project(data):
+    u_project = Project.update_one(
+        {"project_code":data['project_code']},
+        {
+            "$set":{"project title":data['project title']}
+        }
+    )
+    if u_project.matched_count>0:
+        msg = {"message":"project has been renamed succesfully"}
+        return make_response(jsonify(msg),200)
+
+    msg = {"message":"invalid project code"}
+    return make_response(jsonify(msg),400)
