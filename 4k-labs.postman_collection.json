@@ -1,0 +1,745 @@
+{
+	"info": {
+		"_postman_id": "65ddac2f-d372-4345-a12e-b28a75b3229d",
+		"name": "4k-labs",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Genetate Tokens",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Division\": \"Bots\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/generate_token",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"generate_token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete ALL Token",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/delete_all_tokens",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"delete_all_tokens"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Tokens",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/list_tokens",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"list_tokens"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Token",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/delete_token/ABUedoUgg8rFpl1C6c5FgQSr41HI2kRGrY0_v0NBJaI",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"delete_token",
+						"ABUedoUgg8rFpl1C6c5FgQSr41HI2kRGrY0_v0NBJaI"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "register_memeber",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\":\"mube123\",\n    \"password\":\"123\",\n    \"Full Name\":\"mube man\",\n    \"token\":\"FMIrhBXJF4nmN47VpjSxM99G6PK4GTHRFglvI-Tpe6I\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/register_member",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"register_member"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete All Memebres",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/delete_all_memebers",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"delete_all_memebers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "list memebers",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/members",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"members"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "show_member",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/members/QNHA73WEY2PF",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"members",
+						"QNHA73WEY2PF"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "deleteMember",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\":\"BWQ8GQ9CGCOA\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/delete_member",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"delete_member"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "upadate_infromation",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Discription\": \"updated Discription\",\n    \"Full Name\": \"abello \",\n    \"Github\": \"no nigga\",\n    \"Linkden\": \"i dont have one\",\n    \"profile picture\": \"path to profile picture\",\n    \"username\":\"tolosa\",\n    \"password\":\"3214\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/46PRMT4V3XOR/upadate_infromation",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"46PRMT4V3XOR",
+						"upadate_infromation"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "change Role",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\":\"QNHA73WEY2PF\",\n    \"Role\":\"2\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/changeRole",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"changeRole"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "send Application",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"warning": "This is a duplicate header and will be overridden by the Content-Type header generated by Postman.",
+						"key": "Content-Type",
+						"value": "multipart/form-data",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "FUll Name",
+							"value": "beyene  negn",
+							"type": "text"
+						},
+						{
+							"key": "Email Address",
+							"value": "abelkidanemariam99@gmail.com",
+							"type": "text"
+						},
+						{
+							"key": "Acadamia",
+							"value": "3rd year student at addis ababa university",
+							"type": "text"
+						},
+						{
+							"key": "Phone number",
+							"value": "0943163911",
+							"type": "text"
+						},
+						{
+							"key": "Github (optional)",
+							"value": "abel.github.com",
+							"type": "text"
+						},
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/home/abella/Downloads/Documents/0rh4fzbw.pdf"
+						},
+						{
+							"key": "",
+							"value": "",
+							"type": "text",
+							"disabled": true
+						}
+					]
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/sendApplication",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"sendApplication"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null,
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "download files",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/cv/abel0TA.pdf",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"cv",
+						"abel0TA.pdf"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "see all the applicants",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/see_applicants",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"see_applicants"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add suggestion",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"suggestion\":\"this is a good applicants so add him\",\n    \"id\":\"NHRD\",\n    \"user_id\":\"83HNLB52FTNW\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/add_suggestion",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"add_suggestion"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete all appicants",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/delete_all_applicanats",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"delete_all_applicanats"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create New Project",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"project tittle\":\"slam operator\",\n    \"tasks\":[\"creat-ui\",\"do the back end\",\"deploy the model\"],\n    \"members\":[\"46PRMT4V3XOR\",\"83HNLB52FTNW\",\"QNHA73WEY2PF\"],\n    \"user_id\":\"46PRMT4V3XOR\",\n    \"github_link\":\"this is github_ling\",\n    \"docks_link\": \"this is google docks link\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/create_new_project",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"create_new_project"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "list all the projects",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/get_projects",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"get_projects"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get individual project",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/get_projects/ALBVAMO4PM",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"get_projects",
+						"ALBVAMO4PM"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete Project",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/delete_project/NBBKQ2I4T3",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"delete_project",
+						"NBBKQ2I4T3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "complete Task",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"task_code\":\"QLCN38MLSM\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/completeTask",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"completeTask"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add Task",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"project_code\":\"ALBVAMO4PM\",\n    \"task\":\"this will add a new task 2\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/addTask",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"addTask"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete Task",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/deleteTask/IFTQLDPNWH",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"deleteTask",
+						"IFTQLDPNWH"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "rename task",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"task_code\":\"IXDJ3NBVPH\",\n    \"task\":\"sertual abate\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/renameTask",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"renameTask"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "rename project",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"project_code\":\"ALBVAMO4PM\",\n    \"project title\":\"new project\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api_v1/renameProject",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api_v1",
+						"renameProject"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
