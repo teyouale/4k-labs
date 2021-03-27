@@ -426,3 +426,35 @@ def _rename_project(data):
 
     msg = {"message":"invalid project code"}
     return make_response(jsonify(msg),400)
+
+
+'''
+login checker
+'''
+def _check_username_password(req):
+    print(req)
+    member = Member.find_one({'username':str(req.get('username',None))})
+    subset = ['password','_id']
+    if member:
+        if check_password_hash(member.get('password'),str(req.get('password'))):
+            member = _remover(subset,member)
+            passed = True
+            return member,passed
+        else:
+            msg = {"message":"incorrect password"}
+            return make_response(jsonify(msg)),404
+    else:
+        msg = {"message":"username doesn't exist"}
+        return make_response(jsonify(msg)),404
+
+
+'''
+return a dictionary exsplicit of given array
+
+'''
+def _remover(arr,dict):
+    data = {}
+    for key,value in dict.items():
+        if key not in arr:
+            data[key] = value
+    return data

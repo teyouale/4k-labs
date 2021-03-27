@@ -1,10 +1,10 @@
 from . import api_v1,current_app
 from . import db_operations,id_generator
-from flask import request,jsonify,send_from_directory
+from flask import request,jsonify,send_from_directory,make_response
 import secrets
 from werkzeug.utils import secure_filename
 import os
-
+from . import *
 '''
 create decoretors to store user infromation
 '''
@@ -102,7 +102,15 @@ def login():
     if not req.get('username') or len(req.get('password'))<1:
         msg = {"message":"invalid input"}
         return jsonify(msg),400
-
+    data,passed = db_operations._check_username_password(req)
+    if passed==True:
+        additional_claims = data
+        print(passed)
+        access_token = create_access_token(identity=data['user_id'],additional_claims=additional_claims)
+        print(access_token)
+        return jsonify(access_token=access_token),200
+    else:
+        return data,404
 '''
     TODO:
         [] make sure first if the user is logged in before updating any information
