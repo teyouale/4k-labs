@@ -258,12 +258,12 @@ def _create_project(data):
 
     project = {
         "project_code":project_code,
-        "project title":data["project tittle"],
+        "project_title":data["project tittle"],
         "Division":division,
         "team_members":data["members"],
         "progress":0,
         'github':data['github_link'],
-        'docks':data['docks_link']
+        'docs':data['docs_link']
     }
 
     inserted_project = Project.insert_one(project)
@@ -274,7 +274,7 @@ def _create_project(data):
     task_scheme = {
         "task":"",
         "project_code":project_code,
-        "completed":False
+        "completed":0
     }
     for t in data["tasks"]:
         task_scheme['task'] = t
@@ -289,14 +289,15 @@ def _get_all_projects():
     subset = ['_id']
     data = []
     for project in projects:
+        _calc_persentage(project['project_code'])
+        print(project['progress'])
         pro = {}
         for k,v in project.items():
              if k not in subset:
                  pro [k] = v
         
         tasks = Task.find({"project_code":pro.get('project_code')})
-        tasks = [{k:str(v) for k,v in task.items()} for task in tasks]
-
+        tasks = [{k:v for k,v in task.items() if k not in subset} for task in tasks]
         pro['tasks'] = tasks
         data.append(pro)
 
@@ -304,7 +305,7 @@ def _get_all_projects():
     return make_response(jsonify({"projects":data}),200)
 
 def _get_project(project_code):
-    subset = ['id']
+    subset = ['_id']
     project = Project.find_one({'project_code':project_code})
     
     if not project:
@@ -313,11 +314,8 @@ def _get_project(project_code):
     
     project['_id'] = str(project.get('_id'))
 
-    if not project:
-        msg = {"message":"invalid project code"}
-        return make_response(jsonify(msg),404)
     tasks = Task.find({"project_code":project_code})
-    tasks = [{k:str(v) for k,v in task.items()} for task in tasks]
+    tasks = [{k:str(v) for k,v in task.items() if k not in subset} for task in tasks]
     project['tasks'] = tasks
     return make_response(jsonify({"project":project}),200)
 
@@ -337,12 +335,12 @@ def _delete_project(project_code):
 '''
 
 def _calc_persentage(project_code):
-
-    num_completed = Task.find({'project_code':project_code,'completed':True}).count()
+    print('calculationg the progress')
+    num_completed = Task.find({'project_code':project_code,'completed':1}).count()
     total = Task.find({'project_code':project_code}).count()
 
     progress = num_completed/total *100
-
+    progress = round(progress, 2)
     update_project = Project.update_one(
         {"project_code":project_code},
         {
@@ -366,7 +364,7 @@ def _completeTask(task_code):
         {"task_code":task_code},
         {
             "$set":{
-               "completed": not task["completed"],
+               "completed": int(not task["completed"]),
             }
         }
     )
@@ -383,11 +381,12 @@ def _addTask(data):
     task = {
         "task":data['task'],
         "project_code":data['project_code'],
-        "completed":False
+        "completed":0
         }
     task['task_code'] = random_generator(Task,'task_code')
+    t_copy = task.copy()
     Task.insert_one(task)
-    msg = {"message":"task has been successfully added"}
+    msg = {'message':'task has been added succesully','task':t_copy}    
     return make_response(jsonify(msg),200)
 
 def _deleteTask(task_code):

@@ -12,6 +12,13 @@ create decoretors to store user infromation
 '''
 this are used for debuging will be removed during production
 '''
+# @api_v1.after_request
+# def after_request(response):
+#     print(request.referrer)
+#     response.headers.add("Access-Control-Allow-Origin", request.referrer);
+#     response.headers.add("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+#     response.headers.add("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+#     return response
 
 
 @api_v1.route('/api_v1/delete_all_tokens')
@@ -105,10 +112,8 @@ def login():
     data,passed = db_operations._check_username_password(req)
     if passed==True:
         additional_claims = data
-        print(passed)
         access_token = create_access_token(identity=data['user_id'],additional_claims=additional_claims)
-        print(access_token)
-        return jsonify(access_token=access_token),200
+        return jsonify(access_token=access_token,user= data,logged=True),200
     else:
         return data,404
 '''
@@ -262,7 +267,7 @@ def delete_all_applicanats():
 '''
 
 @api_v1.route('/api_v1/create_new_project',methods=['POST'])
-def crear_new_project():
+def create_new_project():
     req = request.get_json()
     return db_operations._create_project(req)
 
@@ -272,6 +277,7 @@ def get_projects():
 
 
 @api_v1.route('/api_v1/get_projects/<project_code>')
+@jwt_required(locations=["headers"])
 def get_project(project_code):
     return db_operations._get_project(project_code)
 

@@ -2,7 +2,7 @@ import os
 
 
 class Config:
-    # CORS_HEADERS = 'Content-Type'
+    CORS_HEADERS = 'Content-Type'
     MAX_CONTENT_LENGTH = 30 * 1024 * 1024
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'anything but string'
     MONOGO_URI = 'mongodb://localhost:27017/4kdevelopment'
