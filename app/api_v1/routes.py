@@ -272,6 +272,7 @@ def create_new_project():
     return db_operations._create_project(req)
 
 @api_v1.route('/api_v1/get_projects')
+@jwt_required(locations=["headers"])
 def get_projects():
     return db_operations._get_all_projects()
 
