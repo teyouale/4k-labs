@@ -126,11 +126,12 @@ def login():
 @api_v1.route('/api_v1/<user_id>/upadate_infromation',methods=['PUT'])
 def update_information(user_id):
     req = request.get_json()
-    subset = ['username','Linkden','Github','Full Name','password','Discription']
+    subset = ['username','Linkden','Github','Full Name','password','Discription','newpassword']
     data = {}
     for key,value in req.items():
         if key in subset and len(value):
             data[key] = value
+        print(data)
     return db_operations._update_information(data,str(user_id))
 
 

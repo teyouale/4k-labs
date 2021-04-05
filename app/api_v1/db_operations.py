@@ -113,8 +113,9 @@ def _list_members():
 def _member_information(user_id):
     info = Member.find_one({'user_id':user_id})
     if info:
-        subset = ['password','token']
+        subset = ['password','token','_id']
         info = [{key:str(value) for key,value in info.items() if key not in subset}]
+        info = info[0]
         return make_response(jsonify(info),200)
     else:
         msg = {'message':"user name doesn't exist"}
@@ -131,18 +132,39 @@ def _delete_member(user_id):
 
 
 def _update_information(data,user_id):
-    if data.get('password') != None:
-        data['password'] = generate_password_hash(data['password'])
-    update_member = Member.update_one(
-        {'user_id':user_id},
-        {"$set":data}
-    )
-    if update_member.matched_count>0:
-        msg = {"message":"information has been updated succesfuly"}
-        return make_response(jsonify(msg),200)
+
+    # get user information using user id first
+    # check if passwork is always reqired  to do the update information
+    member = Member.find_one({'user_id':user_id})
+    if member:
+        if data.get('password') != None:
+            if check_password_hash(member.get('password'),str(data.get('password'))):
+                del data['password']
+                if data.get('newpassword') != None:
+                    data['password'] = generate_password_hash(data['newpassword'])
+                    del data['newpassword']
+                data['Division'] = member['Division']
+                data['user_id'] = user_id
+                update_member = Member.update_one(
+                    {'user_id':user_id},
+                    {"$set":data}
+                )
+                if update_member.matched_count>0:
+                    msg = {"message":"information has been updated succesfuly"}
+                    return make_response(jsonify(data),200)
+                else:
+                    msg = {"message":"username doesn't exist"}
+                    return make_response(jsonify(msg),500)
+            else:
+                msg = {'message': 'incorrect password'}
+                return make_response(jsonify(msg),401)
+        else:
+            msg = {'message','password field is empty'}
+            return make_response(jsonify(msg),400)
     else:
-        msg = {"message":"username doesn't exist"}
-        return make_response(jsonify(msg),500)
+        msg = {'message':"user id doesn't exits"}
+        return make_response(jsonify(msg),404)
+
 
 mapper = {
     0:'intern',
@@ -284,13 +306,20 @@ def _create_project(data):
     msg = {"message":"Project has been added successfully"}
     return make_response(jsonify(msg),200)
 
+def _get_teammember_information(user_id):
+    info = Member.find_one({'user_id':user_id})
+    if info:
+        subset = ['Division','Full Name','profile picture','user_id','username']
+        info = [{key:str(value) for key,value in info.items() if key in subset}]
+        return info[0]
+
 def _get_all_projects():
+
     projects = Project.find({})
     subset = ['_id']
     data = []
     for project in projects:
         _calc_persentage(project['project_code'])
-        print(project['progress'])
         pro = {}
         for k,v in project.items():
              if k not in subset:
@@ -299,9 +328,13 @@ def _get_all_projects():
         tasks = Task.find({"project_code":pro.get('project_code')})
         tasks = [{k:v for k,v in task.items() if k not in subset} for task in tasks]
         pro['tasks'] = tasks
+        members_information = []
+        for user_id in pro['team_members']:
+            members_information.append(_get_teammember_information(user_id))
+        pro['members'] = pro['team_members']
+        pro['team_members'] = members_information
         data.append(pro)
 
-    # print(data)
     return make_response(jsonify({"projects":data}),200)
 
 def _get_project(project_code):
@@ -335,7 +368,6 @@ def _delete_project(project_code):
 '''
 
 def _calc_persentage(project_code):
-    print('calculationg the progress')
     num_completed = Task.find({'project_code':project_code,'completed':1}).count()
     total = Task.find({'project_code':project_code}).count()
 
@@ -431,7 +463,6 @@ def _rename_project(data):
 login checker
 '''
 def _check_username_password(req):
-    print(req)
     member = Member.find_one({'username':str(req.get('username',None))})
     subset = ['password','_id']
     if member:
