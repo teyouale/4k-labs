@@ -1,6 +1,6 @@
 from . import api_v1,current_app
 from . import db_operations,id_generator
-from flask import request,jsonify,send_from_directory,make_response
+from flask import request,jsonify,send_from_directory,make_response,send_file
 import secrets
 from werkzeug.utils import secure_filename
 import os
@@ -125,13 +125,12 @@ def login():
 '''
 @api_v1.route('/api_v1/<user_id>/upadate_infromation',methods=['PUT'])
 def update_information(user_id):
-    req = request.get_json()
-    subset = ['username','Linkden','Github','Full Name','password','Discription','newpassword']
+    req = request.get_json(force=True)
+    subset = ['username','Linkden','Github','Full Name','Discription','newpassword','password','image','user_id']
     data = {}
     for key,value in req.items():
         if key in subset and len(value):
             data[key] = value
-        print(data)
     return db_operations._update_information(data,str(user_id))
 
 
@@ -350,3 +349,24 @@ def renameProject():
         msg = {"message":"invalid input"}
         return jsonify(msg),400
     return db_operations._rename_project(req)
+
+@api_v1.route('/api_v1/get_profile/<image>')
+def get_image(image):
+    profile_path = current_app.config['PROFILE_PICTURES']
+
+    path = os.path.join(os.getcwd(),profile_path,image)
+
+    if os.path.exists(path):
+        return send_file(path, mimetype='image/jpg')
+    return jsonify({'message':"file doesn't exist"}),404
+
+@api_v1.route('/api_v1/get_thumbnail/<image>')
+def get_thumbnail(image):
+    thumbnail_path = current_app.config['THUMBNAILS']
+
+    path = os.path.join(os.getcwd(),thumbnail_path,image)
+
+    if os.path.exists(path):
+        return send_file(path, mimetype='image/jpg')
+    return jsonify({'message':"file doesn't exist"}),404
+    

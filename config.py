@@ -7,6 +7,8 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'anything but string'
     MONOGO_URI = 'mongodb://localhost:27017/4kdevelopment'
     CV_PATH = './cv'
+    PROFILE_PICTURES = './profile'
+    THUMBNAILS = './thumbnails'
     ALLOWED_EXTENSIONS = {'pdf','docs','doc','rtf'}
     # jwt configuration
     JWT_TOKEN_LOCATION = "headers"

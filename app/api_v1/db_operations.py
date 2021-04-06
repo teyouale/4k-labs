@@ -1,8 +1,15 @@
 from .. import mongo
 from werkzeug.security import check_password_hash,generate_password_hash
 import secrets
-from . import make_response,jsonify,id_generator
+from . import make_response,jsonify,id_generator,current_app
 import itertools
+
+from PIL import Image
+import base64 
+import io,os
+
+
+
 
 Member = mongo.db.Member
 Project = mongo.db.Project
@@ -131,6 +138,24 @@ def _delete_member(user_id):
         return make_response(jsonify(msg),404)
 
 
+def _update_profile_picture(image_data,user_id):
+    profile_path = current_app.config['PROFILE_PICTURES']
+    thumbnail_path = current_app.config['THUMBNAILS']
+
+    decoded = base64.b64decode(image_data)
+    image = Image.open(io.BytesIO(decoded))
+    if image.mode != "RGB":
+        image = image.convert("RGB")
+
+    img = image.resize((500,500))
+    img.save(os.path.join(profile_path,user_id+'.png'))
+
+    img = image.resize((150,150))
+    img.save(os.path.join(thumbnail_path,user_id+'.png'))
+
+    return user_id+'.png'
+
+
 def _update_information(data,user_id):
 
     # get user information using user id first
@@ -140,6 +165,10 @@ def _update_information(data,user_id):
         if data.get('password') != None:
             if check_password_hash(member.get('password'),str(data.get('password'))):
                 del data['password']
+                if data.get('image') != None:
+                    profile_path = _update_profile_picture(data['image'],data['user_id'])
+                    data['profile picture'] = profile_path
+                    del data['image']
                 if data.get('newpassword') != None:
                     data['password'] = generate_password_hash(data['newpassword'])
                     del data['newpassword']
