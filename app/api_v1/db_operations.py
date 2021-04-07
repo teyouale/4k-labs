@@ -20,6 +20,17 @@ Task = mongo.db.Task
 
 
 
+'''
+delete all the information [for debuging]
+'''
+def _delteAll():
+    Member.delete_many({})
+    Project.delete_many({})
+    Token.delete_many({})
+    Application.delete_many({})
+    Project.delete_many({})
+    Task.delete_many({})
+    return make_response(jsonify(msg="all deleted"))
 
 '''
     delte all the generated Tokens
@@ -303,7 +314,7 @@ def random_generator(collection_name,searching_query,size=10):
     return code
 
 def _create_project(data):
-    if Project.find({'project_title':data["project tittle"]}).count():
+    if Project.find({'project_title':data["project_title"]}).count():
         msg = {"message":"the same project title exists"}
         return make_response(jsonify(msg),409)
     project_code = random_generator(Project,'project_code',10)
@@ -312,12 +323,13 @@ def _create_project(data):
 
     project = {
         "project_code":project_code,
-        "project_title":data["project tittle"],
+        "project_title":data["project_title"],
         "Division":division,
         "team_members":data["members"],
         "progress":0,
         'github':data['github_link'],
-        'docs':data['docs_link']
+        'docs':data['docs_link'],
+        'description':data['description']
     }
 
     inserted_project = Project.insert_one(project)
@@ -337,8 +349,16 @@ def _create_project(data):
         task_scheme['task_code'] = random_generator(Task,'task_code')
         project['tasks'].append(task_scheme.copy())
         tasks.append(task_scheme.copy())
+    # only addes if there are tasks given by the user
+    if len(tasks):
+        Task.insert_many(tasks)
+    
+    members_information = []
+    for user_id in project['team_members']:
+        members_information.append(_get_teammember_information(user_id))
+    project['members'] = project['team_members']
+    project['team_members'] = members_information
 
-    Task.insert_many(tasks)
     # add tasks to the project and return it as a response 
     msg = {"message":"Project has been added successfully",'project':project}
     return make_response(jsonify(msg),200)
@@ -408,7 +428,12 @@ def _calc_persentage(project_code):
     num_completed = Task.find({'project_code':project_code,'completed':1}).count()
     total = Task.find({'project_code':project_code}).count()
 
-    progress = num_completed/total *100
+    #  to make sure it doesn't devode itself by zero
+    if total:
+        progress = num_completed/total *100
+    else:
+        progress = 0
+    
     progress = round(progress, 2)
     update_project = Project.update_one(
         {"project_code":project_code},
@@ -485,7 +510,7 @@ def _rename_project(data):
     u_project = Project.update_one(
         {"project_code":data['project_code']},
         {
-            "$set":{"project title":data['project title']}
+            "$set":{"project_title":data['project_title']}
         }
     )
     if u_project.matched_count>0:

@@ -31,6 +31,10 @@ def delete_all_memebers():
     db_operations._deleteMembers()
     return "succesully deleted all Members"
 
+@api_v1.route('/api_v1/deleteall')
+def deleteall():
+   return db_operations._delteAll()
+
 '''
     TokeGenerator
     generate Token with Division
@@ -369,4 +373,6 @@ def get_thumbnail(image):
     if os.path.exists(path):
         return send_file(path, mimetype='image/jpg')
     return jsonify({'message':"file doesn't exist"}),404
-    
+
+
+
