@@ -303,6 +303,9 @@ def random_generator(collection_name,searching_query,size=10):
     return code
 
 def _create_project(data):
+    if Project.find({'project_title':data["project tittle"]}).count():
+        msg = {"message":"the same project title exists"}
+        return make_response(jsonify(msg),409)
     project_code = random_generator(Project,'project_code',10)
 
     division = Member.find_one({"user_id":data["user_id"]})["Division"]
@@ -318,6 +321,7 @@ def _create_project(data):
     }
 
     inserted_project = Project.insert_one(project)
+    del project['_id']
     if not inserted_project:
         msg = {"message":"error creating the project"}
         return make_response(jsonify(msg),500)
@@ -327,12 +331,16 @@ def _create_project(data):
         "project_code":project_code,
         "completed":0
     }
+    project['tasks'] = []
     for t in data["tasks"]:
         task_scheme['task'] = t
         task_scheme['task_code'] = random_generator(Task,'task_code')
+        project['tasks'].append(task_scheme.copy())
         tasks.append(task_scheme.copy())
+
     Task.insert_many(tasks)
-    msg = {"message":"Project has been added successfully"}
+    # add tasks to the project and return it as a response 
+    msg = {"message":"Project has been added successfully",'project':project}
     return make_response(jsonify(msg),200)
 
 def _get_teammember_information(user_id):
@@ -352,7 +360,7 @@ def _get_all_projects():
         pro = {}
         for k,v in project.items():
              if k not in subset:
-                 pro [k] = v
+                 pro[k] = v
         
         tasks = Task.find({"project_code":pro.get('project_code')})
         tasks = [{k:v for k,v in task.items() if k not in subset} for task in tasks]
