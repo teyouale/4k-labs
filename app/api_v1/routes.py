@@ -286,6 +286,17 @@ def get_projects():
 def get_project(project_code):
     return db_operations._get_project(project_code)
 
+@api_v1.route('/api_v1/project/updatemembers',methods=['POST'])
+def update_project_members():
+    req = request.get_json()
+    if req == None:
+        return jsonify("invalid request"),400
+    elif req.get('project_code',None) == None:
+        return jsonify(msg="please provide a valid project code"),400
+    if req.get('team_members',None) == None or len(req.get('team_members')) == 0:
+        return jsonify(msg="no team member is provided please provide at least one"),400
+    return db_operations._update_project_members(req)
+
 '''
     on every update of project task
 '''

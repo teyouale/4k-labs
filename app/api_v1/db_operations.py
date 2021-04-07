@@ -407,7 +407,35 @@ def _get_project(project_code):
     tasks = Task.find({"project_code":project_code})
     tasks = [{k:str(v) for k,v in task.items() if k not in subset} for task in tasks]
     project['tasks'] = tasks
+
+    members_information = []
+    for user_id in project['team_members']:
+        members_information.append(_get_teammember_information(user_id))
+    project['members'] = project['team_members']
+    project['team_members'] = members_information
+
     return make_response(jsonify({"project":project}),200)
+
+'''
+update project members
+'''
+
+def _update_project_members(data):
+    project = Project.update_one(
+        {'project_code':data['project_code']},
+        {
+            "$set":{
+               "team_members": data['team_members'],
+            }
+        }
+        )
+    
+    if project.matched_count == 0:
+        msg = {"msg":"invalid project code"}
+        return make_response(jsonify(msg),400)
+    msg = {"msg":"project members has been updated successfully"}
+    return make_response(jsonify(msg),200)
+
 
 def _delete_project(project_code):
     project = Project.find_one({'project_code':project_code})
