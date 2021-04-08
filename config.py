@@ -14,7 +14,7 @@ class Config:
     # jwt configuration
     JWT_TOKEN_LOCATION = "headers"
     JWT_SECRET_KEY = os.environ.get('SECRET_KEY') or 'anything but string'
-    # JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=30)
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=7)
 class development_config(Config):
     DEBUG=True
 

@@ -421,6 +421,7 @@ update project members
 '''
 
 def _update_project_members(data):
+    print(data)
     project = Project.update_one(
         {'project_code':data['project_code']},
         {
