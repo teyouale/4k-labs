@@ -270,10 +270,11 @@ def _change_role(data):
     changes the member in to regula members
 '''
 
-divisions:["DEVS",'BOTS','THINGS']
+
 
 
 def _change_division(data):
+
 
     update_member = Member.update_one(
         {
@@ -395,12 +396,18 @@ def _create_project(data):
     msg = {"message":"Project has been added successfully",'project':project}
     return make_response(jsonify(msg),200)
 
+'''
+info['value'] is used for profile picture component at the fron end
+'''
+
 def _get_teammember_information(user_id):
     info = Member.find_one({'user_id':user_id})
     if info:
         subset = ['Division','Full Name','profile_picture','user_id','username']
         info = [{key:str(value) for key,value in info.items() if key in subset}]
-        return info[0]
+        info = info[0]
+        info['value'] = info['user_id']
+        return info
 
 def _get_all_projects():
 
