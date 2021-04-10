@@ -167,6 +167,8 @@ def _update_profile_picture(image_data,user_id):
     return user_id+'.png'
 
 
+
+
 def _update_information(data,user_id):
 
     # get user information using user id first
@@ -216,6 +218,9 @@ mapper = {
 
 def _change_role(data):
     #  change the string role in to an integer
+    if not data['Role'].isnumeric():
+        msg = {"message":"invalid role"}
+        return make_response(jsonify(msg),400)
     data['Role'] = int (data['Role'])
     # check if the given role exists inside the database
 
@@ -259,6 +264,33 @@ def _change_role(data):
         else:
             msg = {"message":"unkown error occured please try again"}
             return make_response(jsonify(msg),500)
+
+'''
+    update division take input of user_id,division from data
+    changes the member in to regula members
+'''
+
+divisions:["DEVS",'BOTS','THINGS']
+
+
+def _change_division(data):
+
+    update_member = Member.update_one(
+        {
+            'user_id':data['user_id'],
+        },
+        {"$set":{
+            'Role':1,
+            'Division':data['division']
+            }
+        }
+    )
+    if update_member.matched_count>0:
+        msg = {'message':"Division has been changed succesfully"}
+        return make_response(jsonify(msg),200)
+    else:
+        msg = {"message":"invalid user ID"}
+        return make_response(jsonify(msg),500)
 
 def _submit_application(data):
     inserted_application = Application.insert_one(data)

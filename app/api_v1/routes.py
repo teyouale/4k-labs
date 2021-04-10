@@ -65,9 +65,7 @@ def delete_token(token):
 @api_v1.route('/api_v1/register_member',methods=['POST'])
 def register_member():
     req = request.get_json()
-    bol = req.get('username') and req.get('password') and req.get('fullname') and req.get('token')
-    print('the boolen is ',bol)
-    
+
     if not req:
         msg = {"message":"invalid input"}
         return jsonify(msg),400
@@ -161,6 +159,22 @@ def update_information(user_id):
 def changeRole():
     req = request.get_json()
     return db_operations._change_role(req)
+
+
+@api_v1.route('/api_v1/changeDivision',methods=['POST'])
+def changeDivision():
+    divisions = ["DEVS",'BOTS','THINGS']
+    req = request.get_json()
+    if not req:
+        msg = {'message':'invalid request'}
+        return jsonify(msg),400
+    if req.get('user_id',None)==None or req.get('division',None)==None:
+        msg = {'message':'invalid request'}
+        return jsonify(msg),400
+    if req.get('division') not in divisions:
+        msg = {'message':'invalid Division'}
+        return jsonify(msg),400
+    return db_operations._change_division(req)
 
 '''
     TODO:
