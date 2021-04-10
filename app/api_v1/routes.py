@@ -65,17 +65,28 @@ def delete_token(token):
 @api_v1.route('/api_v1/register_member',methods=['POST'])
 def register_member():
     req = request.get_json()
+    bol = req.get('username') and req.get('password') and req.get('fullname') and req.get('token')
+    print('the boolen is ',bol)
+    
+    if not req:
+        msg = {"message":"invalid input"}
+        return jsonify(msg),400
+    if not (req.get('username',None) and req.get('password',None) and req.get('fullname',None) and req.get('token',None)):
+        msg = {"message":"all information is not provided"}
+        return jsonify(msg),400
     data = {
-        'profile picture':'',
+        'profile_picture':'',
         'Discription':'',
         'Linkden':'',
         'Github':'',
         'Role':0,
         'Division':'',
         'projects':None,
+        'username':req.get('username'),
+        'password':req.get('password'),
+        'fullname':req.get('fullname'),
+        'token':req.get('token')
     }
-    for k,v in req.items():
-        data[k]=v
     return db_operations._register_member(data)
 
 

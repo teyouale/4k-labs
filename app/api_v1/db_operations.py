@@ -178,7 +178,7 @@ def _update_information(data,user_id):
                 del data['password']
                 if data.get('image') != None:
                     profile_path = _update_profile_picture(data['image'],data['user_id'])
-                    data['profile picture'] = profile_path
+                    data['profile_picture'] = profile_path
                     del data['image']
                 if data.get('newpassword') != None:
                     data['password'] = generate_password_hash(data['newpassword'])
@@ -366,7 +366,7 @@ def _create_project(data):
 def _get_teammember_information(user_id):
     info = Member.find_one({'user_id':user_id})
     if info:
-        subset = ['Division','Full Name','profile picture','user_id','username']
+        subset = ['Division','Full Name','profile_picture','user_id','username']
         info = [{key:str(value) for key,value in info.items() if key in subset}]
         return info[0]
 
