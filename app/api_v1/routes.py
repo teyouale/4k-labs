@@ -335,6 +335,21 @@ def update_project_members():
 def delete_project(project_code):
     return db_operations._delete_project(project_code)
 
+'''
+    update project tittle,github link,docks link,Description
+'''
+
+@api_v1.route('/api_v1/updateproject',methods=['POST'])
+def update_project():
+    req = request.get_json()
+    if not req:
+        msg = {'message':'invalid input'}
+        return jsonify(msg),400
+    if not req.get('project_code',None):
+        msg = {'message':'invalid input'}
+        return jsonify(msg),400
+    return db_operations._update_project(req)
+
 
 @api_v1.route('/api_v1/completeTask', methods = ['PUT'])
 def completeTask():

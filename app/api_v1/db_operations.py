@@ -488,6 +488,33 @@ def _delete_project(project_code):
     return "Project has been succesfully delted",200
 
 '''
+update project
+'''
+def _update_project(data):
+    subset = ['project_title','github','docs','description']
+    # Project = Member.find_one({'project_code':data.get('project_code',None)})
+    # if not member:
+    #     msg = {"message":'invalid project code'}
+    #     return make_response(jsonify(msg)),404
+    # new_data = {}
+    # for key,val in data.items():
+    #     if key in subset:
+    #         new_data[key] = val or member[key]
+    # update_member = Member.update_one(
+    #         {
+    #             'Role':2,
+    #             'Division':member['Division']
+    #         },
+    #         {"$set":{'Role':1}}
+    #     )
+
+            
+
+    # data = {}
+    # for d in data:
+    pass
+
+'''
     when task is completed 
     updare the progress
 '''
