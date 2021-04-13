@@ -170,7 +170,6 @@ def _update_profile_picture(image_data,user_id):
 
 
 def _update_information(data,user_id):
-
     # get user information using user id first
     # check if passwork is always reqired  to do the update information
     member = Member.find_one({'user_id':user_id})
@@ -187,13 +186,14 @@ def _update_information(data,user_id):
                     del data['newpassword']
                 data['Division'] = member['Division']
                 data['user_id'] = user_id
+                data['profile_picture'] = member['profile_picture']
                 update_member = Member.update_one(
                     {'user_id':user_id},
                     {"$set":data}
                 )
                 if update_member.matched_count>0:
                     msg = {"message":"information has been updated succesfuly"}
-                    return make_response(jsonify(data),200)
+                    return make_response(jsonify({'message':msg,'data':data}),200)
                 else:
                     msg = {"message":"username doesn't exist"}
                     return make_response(jsonify(msg),500)

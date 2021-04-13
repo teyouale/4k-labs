@@ -4,6 +4,7 @@ from flask import request,jsonify,send_from_directory,make_response,send_file
 import secrets
 from werkzeug.utils import secure_filename
 import os
+import time
 from . import *
 '''
 create decoretors to store user infromation
@@ -139,7 +140,7 @@ def login():
 @api_v1.route('/api_v1/<user_id>/upadate_infromation',methods=['PUT'])
 def update_information(user_id):
     req = request.get_json(force=True)
-    subset = ['username','Linkden','Github','Full Name','Discription','newpassword','password','image','user_id']
+    subset = ['username','Linkden','Github','fullname','Discription','newpassword','password','image','user_id']
     data = {}
     for key,value in req.items():
         if key in subset and len(value):
