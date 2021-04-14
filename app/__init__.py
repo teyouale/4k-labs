@@ -2,7 +2,7 @@ from flask import Flask,redirect,url_for,render_template,request
 from flask_pymongo import PyMongo
 from flask_cors import CORS
 from config import Config,configuration
-from flask_jwt_extended import create_access_token,get_jwt,jwt_required,JWTManager
+from flask_jwt_extended import create_access_token,get_jwt,jwt_required,JWTManager,create_refresh_token,verify_jwt_in_request      
 import os
 #  Add Cors and pyjwt
 

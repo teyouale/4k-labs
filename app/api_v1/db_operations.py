@@ -17,6 +17,7 @@ Token = mongo.db.Token
 Application = mongo.db.Application
 Project = mongo.db.Project
 Task = mongo.db.Task
+SuperAdmin = mongo.db.SuperAdmin
 
 
 
@@ -80,6 +81,39 @@ def _deleteToken(token):
         return res
     else:
         return make_response(jsonify({}),500)
+
+'''
+    ******************
+    register new admin
+    ******************
+'''
+
+def _register_admin(data):
+    num = SuperAdmin.find({"username":data["username"]}).count()
+    if(num>0):
+        return {
+            "message":'username already exit'
+        }
+    else:
+        data['password'] = generate_password_hash(data['password'])
+
+    user_id = id_generator(12)
+    members = SuperAdmin.find({'user_id':user_id}).count()
+    while members != 0:
+        user_id = id_generator(12)
+        members = SuperAdmin.find({'user_id':user_id}).count()
+
+    data['user_id'] = user_id
+    register_member = SuperAdmin.insert_one(data)
+
+    if register_member.inserted_id:
+        msg = {'message':'succesfully registerd'}
+        return make_response(jsonify(msg),200)
+    else:  
+        msg = {"message":"Error registering the user"} 
+        return make_response(jsonify(msg),500)
+
+
 
 '''
     ******************
@@ -167,6 +201,42 @@ def _update_profile_picture(image_data,user_id):
     return user_id+'.png'
 
 
+def _update_admin_profile(data):
+    admin = SuperAdmin.find_one({'user_id':data['user_id']})
+    if admin:
+        if data.get('password') != None:
+            if check_password_hash(admin.get('password'),str(data.get('password'))):
+                del data['password']
+                if data.get('newpassword') != None:
+                    data['password'] = generate_password_hash(data['newpassword'])
+                    del data['newpassword']
+                # alway add role and superadmin as true
+                data['superadmin'] = True
+                data['Role'] = admin['Role']
+                update_admin = SuperAdmin.update_one(
+                    {'user_id':data['user_id']},
+                    {"$set":data}
+                )
+                # delete the password since it will be back as a response
+                del data['password']
+                
+                if update_admin.matched_count>0:
+                    msg = {"message":"admin Profile has been updated succesfuly"}
+                    return make_response(jsonify({'message':msg,'data':data}),200)
+                else:
+                    msg = {"message":"username doesn't exist"}
+                    return make_response(jsonify(msg),500)
+            else:
+                msg = {'message': 'incorrect password'}
+                return make_response(jsonify(msg),401)
+        else:
+            msg = {'message','password field is empty'}
+            return make_response(jsonify(msg),400)
+    else:
+        msg = {'message':"user id doesn't exits"}
+        return make_response(jsonify(msg),404)
+
+
 
 
 def _update_information(data,user_id):
@@ -191,6 +261,7 @@ def _update_information(data,user_id):
                     {'user_id':user_id},
                     {"$set":data}
                 )
+                del data['password']
                 if update_member.matched_count>0:
                     msg = {"message":"information has been updated succesfuly"}
                     return make_response(jsonify({'message':msg,'data':data}),200)
@@ -618,6 +689,27 @@ def _rename_project(data):
 
     msg = {"message":"invalid project code"}
     return make_response(jsonify(msg),400)
+
+
+'''
+login checker for admin
+'''
+def _check_username_password_admin(req):
+    s_admin = SuperAdmin.find_one({'username':str(req.get('username',None))})
+    subset = ['password','_id']
+    if s_admin:
+        if check_password_hash(s_admin.get('password'),str(req.get('password'))):
+            s_admin = _remover(subset,s_admin)
+            # add superadmin since it is a response
+            s_admin['superadmin'] = True
+            passed = True
+            return s_admin,passed
+        else:
+            msg = {"message":"incorrect password"}
+            return make_response(jsonify(msg)),404
+    else:
+        msg = {"message":"username doesn't exist"}
+        return make_response(jsonify(msg)),404
 
 
 '''

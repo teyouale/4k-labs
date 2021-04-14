@@ -6,6 +6,14 @@ from werkzeug.utils import secure_filename
 import os
 import time
 from . import *
+
+
+'''
+create decorators for intern,regular_member,team_leader,alumni,admin,super_admin
+'''
+
+
+
 '''
 create decoretors to store user infromation
 '''
@@ -57,6 +65,35 @@ def list_tokens():
 @api_v1.route('/api_v1/delete_token/<token>')
 def delete_token(token):
     return db_operations._deleteToken(str(token))
+
+
+'''
+Register an Admin
+'''
+
+@api_v1.route('/api_v1/register_admin',methods=['POST'])
+def register_admin():
+    req = request.get_json()
+
+    if not req:
+        msg = {"message":"invalid input"}
+        return jsonify(msg),400
+    if not (req.get('username',None) and req.get('password',None)):
+        msg = {"message":"all information is not provided"}
+        return jsonify(msg),400
+    data = {
+        'profile_picture':'',
+        'Discription':'',
+        'Linkden':'',
+        'Github':'',
+        'Role':4,
+        'Division':'',
+        'projects':None,
+        'username':req.get('username'),
+        'password':req.get('password'),
+        'superadmin':True,
+    }
+    return db_operations._register_admin(data)
 
 '''
     To register only username,password Full Name and Token are needed
@@ -111,6 +148,29 @@ def delete_member():
 
 
 '''
+Admin login
+'''
+
+@api_v1.route('/api_v1/adminlogin',methods=['POST'])
+def adminlogin():
+    req = request.get_json()
+    if not req:
+        msg = {"message":"invalid input"}
+        return jsonify(msg),400
+    if not (req.get('username',None) and req.get('password',None)):
+        msg = {"message":"invalid input"}
+        return jsonify(msg),400
+    data,passed = db_operations._check_username_password_admin(req)
+    if passed==True:
+        additional_claims = data
+        access_token = create_access_token(identity=data['user_id'],additional_claims=additional_claims)
+        refresh_token = create_refresh_token(identity=data['user_id'])
+        return jsonify(access_token=access_token,user= data,refresh_token=refresh_token),200
+    else:
+        return data,404
+
+
+'''
 do LOGIN here
 '''
 
@@ -127,7 +187,8 @@ def login():
     if passed==True:
         additional_claims = data
         access_token = create_access_token(identity=data['user_id'],additional_claims=additional_claims)
-        return jsonify(access_token=access_token,user= data,logged=True),200
+        refresh_token = create_refresh_token(identity=data['user_id'])
+        return jsonify(access_token=access_token,user= data,refresh_token=refresh_token),200
     else:
         return data,404
 '''
@@ -147,6 +208,17 @@ def update_information(user_id):
             data[key] = value
     return db_operations._update_information(data,str(user_id))
 
+'''
+update Admin profile
+'''
+
+@api_v1.route('/api_v1/upadate_admin_profile',methods=['PUT'])
+def upadate_admin_profile():
+    req = request.get_json(force=True)
+    if req==None:
+        msg = {'message':'invalid request'}
+        return jsonify(msg),400
+    return db_operations._update_admin_profile(req)
 
 '''
   req =   {
@@ -303,7 +375,6 @@ def create_new_project():
 @api_v1.route('/api_v1/get_projects')
 @jwt_required(locations=["headers"])
 def get_projects():
-    time.sleep(1)
     return db_operations._get_all_projects()
 
 
