@@ -491,27 +491,31 @@ def _delete_project(project_code):
 update project
 '''
 def _update_project(data):
-    subset = ['project_title','github','docs','description']
-    # Project = Member.find_one({'project_code':data.get('project_code',None)})
-    # if not member:
-    #     msg = {"message":'invalid project code'}
-    #     return make_response(jsonify(msg)),404
-    # new_data = {}
-    # for key,val in data.items():
-    #     if key in subset:
-    #         new_data[key] = val or member[key]
-    # update_member = Member.update_one(
-    #         {
-    #             'Role':2,
-    #             'Division':member['Division']
-    #         },
-    #         {"$set":{'Role':1}}
-    #     )
-
-            
-
-    # data = {}
-    # for d in data:
+    subset = ['project_title','github','docs','description','project_code']
+    project = Project.find_one({'project_code':data.get('project_code',None)})
+    if not project:
+        msg = {"message":'invalid project code'}
+        return make_response(jsonify(msg)),404
+    new_data = {}
+    for key in subset:
+        new_data[key] = data.get(key,None) or project.get(key,None)
+    update_project = Project.update_one(
+        {"project_code":data['project_code']},
+        {
+            "$set":{
+               "project_title": data['project_title'],
+               "github":data['github'],
+               "docs":data['docs'],
+               "description":data['description']
+            }
+        }
+    )
+    if update_project.matched_count>0:
+        msg = {"message":"Project has been updated succesfully"}
+        return make_response(jsonify(msg),200)
+    else:
+        msg = {"message":'invalid project code'}
+        return make_response(jsonify(msg)),404
     pass
 
 '''

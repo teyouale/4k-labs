@@ -235,7 +235,6 @@ def sendApplication():
 
 @api_v1.route('/api_v1/cv/<filename>')
 def download_cv(filename):
-    print()
     return send_from_directory(current_app.config['CV_PATH'],filename,as_attachment=True)
 
 
@@ -304,6 +303,7 @@ def create_new_project():
 @api_v1.route('/api_v1/get_projects')
 @jwt_required(locations=["headers"])
 def get_projects():
+    time.sleep(1)
     return db_operations._get_all_projects()
 
 
