@@ -764,7 +764,7 @@ def _get_events():
     subset = ['_id']
     events = Event.find({})
     events = [{k:v for k,v in event.items() if k not in subset} for event in events]
-    return make_response(jsonify(events),200)
+    return make_response(jsonify(events=events),200)
 
 '''
     save event images

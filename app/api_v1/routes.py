@@ -511,4 +511,14 @@ def add_event():
 def get_events():
     return db_operations._get_events()
 
+@api_v1.route('/api_v1/get_event/<image>')
+def get_event_image(image):
+    event_path = current_app.config['EVENTS']
+
+    path = os.path.join(os.getcwd(),event_path,image)
+
+    if os.path.exists(path):
+        return send_file(path, mimetype='image/jpg')
+    return jsonify({'message':"file doesn't exist"}),404
+
 
