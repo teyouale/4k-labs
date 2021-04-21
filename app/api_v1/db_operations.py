@@ -762,7 +762,7 @@ def _add_event(data):
 '''
 def _get_events():
     subset = ['_id']
-    events = Event.find({})
+    events = Event.find({}).sort([("_id",-1)])
     events = [{k:v for k,v in event.items() if k not in subset} for event in events]
     return make_response(jsonify(events=events),200)
 
