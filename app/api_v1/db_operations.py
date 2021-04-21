@@ -18,6 +18,7 @@ Application = mongo.db.Application
 Project = mongo.db.Project
 Task = mongo.db.Task
 SuperAdmin = mongo.db.SuperAdmin
+Event = mongo.db.Event
 
 
 
@@ -62,11 +63,11 @@ get the division based on information given by the token
 
 '''
 def _get_division(token):
-    token = Token.find_one({'token':token})
+    token = Token.find_one({'token':token}) 
     return token['Division']
 
 def _listToken():
-    tokens = Token.find({})
+    tokens = Token.find({}).sort([("_id",-1)])
     tokens = [{'token':x['token'],'Division':x['Division']} for x in tokens]
     res = make_response(jsonify({'tokens':tokens}),200)
     return res
@@ -261,7 +262,6 @@ def _update_information(data,user_id):
                     {'user_id':user_id},
                     {"$set":data}
                 )
-                del data['password']
                 if update_member.matched_count>0:
                     msg = {"message":"information has been updated succesfuly"}
                     return make_response(jsonify({'message':msg,'data':data}),200)
@@ -741,3 +741,48 @@ def _remover(arr,dict):
         if key not in arr:
             data[key] = value
     return data
+
+'''
+    add new event 
+'''
+def _add_event(data):
+    data['event_id'] = random_generator(Event,'event_id',10)
+    data['event_image'] = _save_event(data['event_image'],data['event_id'])
+    event = Event.insert_one(data)
+    del data['_id']
+    if event.inserted_id:
+        res = {'message':'event has been created','event':data}
+        return make_response(jsonify(res),200)
+    else:
+        return make_response(jsonify({'message':'error while creating the event'}),400)
+
+
+'''
+    get all the events 
+'''
+def _get_events():
+    subset = ['_id']
+    events = Event.find({})
+    events = [{k:v for k,v in event.items() if k not in subset} for event in events]
+    return make_response(jsonify(events),200)
+
+'''
+    save event images
+'''
+
+
+def _save_event(image_data,event_id):
+    event_path = current_app.config['EVENTS']
+
+    if not os.path.exists(event_path):
+        os.mkdir(event_path)
+
+    decoded = base64.b64decode(image_data)
+    image = Image.open(io.BytesIO(decoded))
+    if image.mode != "RGB":
+        image = image.convert("RGB")
+
+    img = image.resize((500,500))
+    img.save(os.path.join(event_path,event_id+'.png'))
+
+    return event_id+'.png'

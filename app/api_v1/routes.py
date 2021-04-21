@@ -498,4 +498,17 @@ def get_thumbnail(image):
     return jsonify({'message':"file doesn't exist"}),404
 
 
+@api_v1.route('/api_v1/add_event', methods=['POST'])
+def add_event():
+    req = request.get_json()
+    if not req:
+        return jsonify('invalid input'),400
+    if not(req.get('event_title',None) and req.get('event_description',None) and req.get('event_start',None) and req.get('event_end',None) and req.get('event_image',None)):
+        return jsonify('all input are necessary'),400
+    return db_operations._add_event(req)
+
+@api_v1.route('/api_v1/get_events', methods=['GET'])
+def get_events():
+    return db_operations._get_events()
+
 

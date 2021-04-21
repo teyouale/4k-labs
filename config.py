@@ -10,6 +10,7 @@ class Config:
     CV_PATH = './cv'
     PROFILE_PICTURES = './profile'
     THUMBNAILS = './thumbnails'
+    EVENTS = './events'
     ALLOWED_EXTENSIONS = {'pdf','docs','doc','rtf'}
     # jwt configuration
     JWT_TOKEN_LOCATION = "headers"
