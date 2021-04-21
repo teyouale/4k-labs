@@ -786,3 +786,12 @@ def _save_event(image_data,event_id):
     img.save(os.path.join(event_path,event_id+'.png'))
 
     return event_id+'.png'
+
+def _delete_event(event_id):
+    delete_event = Event.delete_one({'event_id':event_id})
+    if delete_event.deleted_count:
+        msg = {"message":"event has been deleted successfully"}
+        return make_response(jsonify(msg),200)
+    else:
+        msg = {"message":"event id doesn't exist"}
+        return make_response(jsonify(msg),404)

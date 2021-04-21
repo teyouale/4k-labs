@@ -521,4 +521,8 @@ def get_event_image(image):
         return send_file(path, mimetype='image/jpg')
     return jsonify({'message':"file doesn't exist"}),404
 
+@api_v1.route('/api_v1/delete_event/<event_id>')
+def delete_event(event_id):
+    return db_operations._delete_event(event_id)
+
 
