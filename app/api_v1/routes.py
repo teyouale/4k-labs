@@ -440,6 +440,7 @@ def update_project():
 
 
 @api_v1.route('/api_v1/completeTask', methods = ['PUT'])
+@intern_required()
 def completeTask():
     req = request.get_json()
     if not req:
@@ -467,7 +468,6 @@ delete a task
 '''
 
 @api_v1.route('/api_v1/deleteTask/<task_code>', methods = ['POST'])
-@intern_required()
 def deleteTask(task_code):
     return db_operations._deleteTask(task_code)
 
