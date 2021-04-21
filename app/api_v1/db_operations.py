@@ -787,7 +787,23 @@ def _save_event(image_data,event_id):
 
     return event_id+'.png'
 
+'''
+    delete event image after image is delted
+'''
+def _delte_event_image(images):
+    event_path = current_app.config['EVENTS']
+
+    for image in images:
+        path = os.path.join(os.getcwd(),event_path,image)
+        os.remove(path)
+        print(path,' delted successfully')
+
+
 def _delete_event(event_id):
+    event = Event.find_one({'event_id':event_id})
+    event_images = event['event_gallery']
+    event_images.append(event['event_image'])
+    _delte_event_image(event_images)
     delete_event = Event.delete_one({'event_id':event_id})
     if delete_event.deleted_count:
         msg = {"message":"event has been deleted successfully"}
