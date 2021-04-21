@@ -6,12 +6,28 @@ from werkzeug.utils import secure_filename
 import os
 import time
 from . import *
+from functools import wraps
 
 
 '''
 create decorators for intern,regular_member,team_leader,alumni,admin,super_admin
 '''
 
+def intern_required():
+    def wrapper(fn):
+        @wraps(fn)
+        def decorator(*args, **kwargs):
+            verify_jwt_in_request()
+            claims = get_jwt()
+            print(claims)
+            if claims["Role"]==0:
+                return fn(*args, **kwargs)
+            else:
+                return jsonify(msg="Intern only!"), 403
+
+        return decorator
+
+    return wrapper
 
 
 '''
@@ -121,7 +137,8 @@ def register_member():
         'username':req.get('username'),
         'password':req.get('password'),
         'fullname':req.get('fullname'),
-        'token':req.get('token')
+        'token':req.get('token'),
+        'superadmin': False
     }
     return db_operations._register_member(data)
 
@@ -450,6 +467,7 @@ delete a task
 '''
 
 @api_v1.route('/api_v1/deleteTask/<task_code>', methods = ['POST'])
+@intern_required()
 def deleteTask(task_code):
     return db_operations._deleteTask(task_code)
 

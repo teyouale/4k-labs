@@ -721,6 +721,7 @@ def _check_username_password(req):
     if member:
         if check_password_hash(member.get('password'),str(req.get('password'))):
             member = _remover(subset,member)
+            member['superadmin'] = False
             passed = True
             return member,passed
         else:
