@@ -9,21 +9,31 @@ from . import *
 from functools import wraps
 
 
+
+
+roleMap = {
+    'intern':0,
+    'regular_member':1,
+    'team_leader':2,
+    'alumni':3,
+    'admin':4,
+}
+
+
 '''
 create decorators for intern,regular_member,team_leader,alumni,admin,super_admin
 '''
 
-def intern_required():
+def role_required(roles):
     def wrapper(fn):
         @wraps(fn)
         def decorator(*args, **kwargs):
             verify_jwt_in_request()
             claims = get_jwt()
-            print(claims)
-            if claims["Role"]==0:
+            if claims["Role"] in roles:
                 return fn(*args, **kwargs)
             else:
-                return jsonify(msg="Intern only!"), 403
+                return jsonify(msg="user doesn't have permission to access the files!"), 403
 
         return decorator
 
@@ -67,6 +77,7 @@ def deleteall():
 
 
 @api_v1.route('/api_v1/generate_token',methods=['POST'])
+@role_required([roleMap.get('admin')])
 def generate_token():
     req = request.get_json()
     token = secrets.token_urlsafe()
@@ -75,22 +86,25 @@ def generate_token():
 
 #  list all the generated tokens
 @api_v1.route('/api_v1/list_tokens')
+@role_required([roleMap.get('admin')])
 def list_tokens():
     return db_operations._listToken()
     
 @api_v1.route('/api_v1/delete_token/<token>')
+@role_required([roleMap.get('admin')])
 def delete_token(token):
     return db_operations._deleteToken(str(token))
 
 
 '''
 Register an Admin
+
+this line will be deleted
 '''
 
 @api_v1.route('/api_v1/register_admin',methods=['POST'])
 def register_admin():
     req = request.get_json()
-
     if not req:
         msg = {"message":"invalid input"}
         return jsonify(msg),400
@@ -109,7 +123,7 @@ def register_admin():
         'password':req.get('password'),
         'superadmin':True,
     }
-    return db_operations._register_admin(data)
+    return "db_operations._register_admin(data)"
 
 '''
     To register only username,password Full Name and Token are needed
@@ -159,6 +173,7 @@ Delete a memeber
             
 '''
 @api_v1.route('/api_v1/delete_member',methods=['POST'])
+@role_required([roleMap.get('admin')])
 def delete_member():
     req = request.get_json()
     return db_operations._delete_member(str(req['user_id']))
@@ -216,6 +231,7 @@ def login():
 
 '''
 @api_v1.route('/api_v1/<user_id>/upadate_infromation',methods=['PUT'])
+@jwt_required(locations=["headers"])
 def update_information(user_id):
     req = request.get_json(force=True)
     subset = ['username','Linkden','Github','fullname','Discription','newpassword','password','image','user_id']
@@ -230,6 +246,7 @@ update Admin profile
 '''
 
 @api_v1.route('/api_v1/upadate_admin_profile',methods=['PUT'])
+@jwt_required(locations=["headers"])
 def upadate_admin_profile():
     req = request.get_json(force=True)
     if req==None:
@@ -246,12 +263,14 @@ def upadate_admin_profile():
 '''
 
 @api_v1.route('/api_v1/changeRole',methods=['PUT'])
+@role_required([roleMap.get('admin')])
 def changeRole():
     req = request.get_json()
     return db_operations._change_role(req)
 
 
 @api_v1.route('/api_v1/changeDivision',methods=['POST'])
+@jwt_required(locations=["headers"])
 def changeDivision():
     divisions = ["DEVS",'BOTS','THINGS']
     req = request.get_json()
@@ -265,24 +284,6 @@ def changeDivision():
         msg = {'message':'invalid Division'}
         return jsonify(msg),400
     return db_operations._change_division(req)
-
-'''
-    TODO:
-        [x] application Form
-            [x] applicarion form
-            [x] sending resume or cv
-            [x] make sure there is no duplicates
-            
-            
-    the form contains
-        Email Address
-        FUll Name
-        Acadamic level
-        cv/resume
-        phonenumber
-        github (optional)
-'''
-
 
 
 @api_v1.route('/api_v1/sendApplication',methods=['POST'])
@@ -323,6 +324,7 @@ def sendApplication():
 '''
 
 @api_v1.route('/api_v1/cv/<filename>')
+@jwt_required(locations=["headers"])
 def download_cv(filename):
     return send_from_directory(current_app.config['CV_PATH'],filename,as_attachment=True)
 
@@ -335,6 +337,7 @@ def download_cv(filename):
         [] use the path as a uniqe key 
 '''
 @api_v1.route('/api_v1/see_applicants')
+@role_required([roleMap.get('admin')])
 def seeApplicants():
     return db_operations._get_applicants()
 
@@ -342,6 +345,7 @@ def seeApplicants():
 #  it as it is
 
 @api_v1.route('/api_v1/add_suggestion',methods=['POST'])
+@role_required([roleMap.get('team_leader')])
 def add_suggestion():
     req = request.get_json()
     return  db_operations._add_suggestion(req)
@@ -351,6 +355,7 @@ def add_suggestion():
 '''
 
 @api_v1.route('/api_v1/delete_all_applicanats')
+@role_required([roleMap.get('admin')])
 def delete_all_applicanats():
     db_operations._delete_all_applicanats()
     return  "all the applications are delted succesfully"
@@ -385,6 +390,7 @@ def delete_all_applicanats():
 '''
 
 @api_v1.route('/api_v1/create_new_project',methods=['POST'])
+@role_required([roleMap.get('team_leader')])
 def create_new_project():
     req = request.get_json()
     return db_operations._create_project(req)
@@ -401,6 +407,7 @@ def get_project(project_code):
     return db_operations._get_project(project_code)
 
 @api_v1.route('/api_v1/project/updatemembers',methods=['POST'])
+@role_required([roleMap.get('team_leader')])
 def update_project_members():
     req = request.get_json()
     if req == None:
@@ -420,6 +427,7 @@ def update_project_members():
     also deltes all the subtasks of the project
 '''
 @api_v1.route('/api_v1/delete_project/<project_code>')
+@role_required([roleMap.get('admin')])
 def delete_project(project_code):
     return db_operations._delete_project(project_code)
 
@@ -428,6 +436,7 @@ def delete_project(project_code):
 '''
 
 @api_v1.route('/api_v1/updateproject',methods=['POST'])
+@role_required([roleMap.get('team_leader')])
 def update_project():
     req = request.get_json()
     if not req:
@@ -440,7 +449,7 @@ def update_project():
 
 
 @api_v1.route('/api_v1/completeTask', methods = ['PUT'])
-@intern_required()
+@jwt_required(locations=["headers"])
 def completeTask():
     req = request.get_json()
     if not req:
@@ -450,6 +459,7 @@ def completeTask():
     
     
 @api_v1.route('/api_v1/addTask', methods = ['POST'])
+@role_required([v for k,v in roleMap.items()])
 def addTask():
 
     req = request.get_json()
@@ -468,10 +478,12 @@ delete a task
 '''
 
 @api_v1.route('/api_v1/deleteTask/<task_code>', methods = ['POST'])
+@jwt_required(locations=["headers"])
 def deleteTask(task_code):
     return db_operations._deleteTask(task_code)
 
 @api_v1.route('/api_v1/renameTask', methods = ['POST'])
+@jwt_required(locations=["headers"])
 def renameTask():
     req = request.get_json()
     #  if it is none
@@ -484,6 +496,7 @@ def renameTask():
     return db_operations._rename_task(req)
 
 @api_v1.route('/api_v1/renameProject', methods = ['POST'])
+@role_required([roleMap.get('team_leader')])
 def renameProject():
     req = request.get_json()
     #  if it is none
@@ -506,6 +519,7 @@ def get_image(image):
     return jsonify({'message':"file doesn't exist"}),404
 
 @api_v1.route('/api_v1/get_thumbnail/<image>')
+@jwt_required(locations=["headers"])
 def get_thumbnail(image):
     thumbnail_path = current_app.config['THUMBNAILS']
 
@@ -517,6 +531,7 @@ def get_thumbnail(image):
 
 
 @api_v1.route('/api_v1/add_event', methods=['POST'])
+@role_required([roleMap.get('admin')])
 def add_event():
     req = request.get_json()
     if not req:
@@ -526,6 +541,7 @@ def add_event():
     return db_operations._add_event(req)
 
 @api_v1.route('/api_v1/get_events', methods=['GET'])
+@role_required([roleMap.get('admin')])
 def get_events():
     return db_operations._get_events()
 
@@ -539,7 +555,9 @@ def get_event_image(image):
         return send_file(path, mimetype='image/jpg')
     return jsonify({'message':"file doesn't exist"}),404
 
+
 @api_v1.route('/api_v1/delete_event/<event_id>')
+@role_required([roleMap.get('admin')])
 def delete_event(event_id):
     return db_operations._delete_event(event_id)
 
