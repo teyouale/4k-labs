@@ -17,5 +17,7 @@ def create_app(config_name):
     mongo.init_app(app,uri=configuration[config_name].MONOGO_URI)
     cors = CORS(app, resources={r"*": {"origins": "*"}},supports_credentials=True)
     from .api_v1 import api_v1
+    from .web import web
     app.register_blueprint(api_v1)
+    app.register_blueprint(web)
     return app

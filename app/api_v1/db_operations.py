@@ -595,7 +595,7 @@ def _update_project(data):
 '''
 
 def _calc_persentage(project_code):
-    num_completed = Task.find({'project_code':project_code,'completed':1}).count()
+    num_completed = Task.find({'project_code':project_code,'status':2}).count()
     total = Task.find({'project_code':project_code}).count()
 
     #  to make sure it doesn't devode itself by zero
@@ -616,10 +616,9 @@ def _calc_persentage(project_code):
 
     pass
 
-def _completeTask(task_code):
+def _UpdateTaskStatus(task_code,status):
     
     task  = Task.find_one({"task_code":task_code})
-
     if not task:
         msg = {"message":"invalid task code was provided"}
         return make_response(jsonify(msg),404)
@@ -628,12 +627,13 @@ def _completeTask(task_code):
         {"task_code":task_code},
         {
             "$set":{
-               "completed": int(not task["completed"]),
+               "status": int(status),
             }
         }
     )
     
     _calc_persentage(task['project_code'])
+    
     msg = {"message":"task is updated succesfully"}
     return make_response(jsonify(msg),200)
 
@@ -645,7 +645,8 @@ def _addTask(data):
     task = {
         "task":data['task'],
         "project_code":data['project_code'],
-        "completed":0
+        "completed":0,
+        "status":0
         }
     task['task_code'] = random_generator(Task,'task_code')
     t_copy = task.copy()

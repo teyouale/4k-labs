@@ -390,13 +390,11 @@ def delete_all_applicanats():
 '''
 
 @api_v1.route('/api_v1/create_new_project',methods=['POST'])
-@role_required([roleMap.get('team_leader')])
 def create_new_project():
     req = request.get_json()
     return db_operations._create_project(req)
 
 @api_v1.route('/api_v1/get_projects')
-@jwt_required(locations=["headers"])
 def get_projects():
     return db_operations._get_all_projects()
 
@@ -448,16 +446,22 @@ def update_project():
     return db_operations._update_project(req)
 
 
-@api_v1.route('/api_v1/completeTask', methods = ['PUT'])
-@jwt_required(locations=["headers"])
-def completeTask():
+@api_v1.route('/api_v1/updateTask', methods = ['PUT'])
+@jwt_required(locations=["headers"])    
+def updateTask():
     req = request.get_json()
+    print(req)
     if not req:
-        msg = {"message":"task code is not provided"}
+        msg = {"message":"invalid request"}
         return jsonify(msg),400
-    return db_operations._completeTask(str(req.get('task_code')))
-    
-    
+    if req.get('task_code',None) == None or req.get('status',None) == None:
+        msg = {"message":"all inputs are required"}
+        return jsonify(msg),400
+    return db_operations._UpdateTaskStatus(req['task_code'],req['status'])
+
+
+
+
 @api_v1.route('/api_v1/addTask', methods = ['POST'])
 @role_required([v for k,v in roleMap.items()])
 def addTask():
