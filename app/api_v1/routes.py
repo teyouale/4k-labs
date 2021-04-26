@@ -400,7 +400,6 @@ def get_projects():
 
 
 @api_v1.route('/api_v1/get_projects/<project_code>')
-@jwt_required(locations=["headers"])
 def get_project(project_code):
     return db_operations._get_project(project_code)
 
