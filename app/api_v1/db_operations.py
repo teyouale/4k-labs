@@ -637,6 +637,21 @@ def _UpdateTaskStatus(task_code,status):
     msg = {"message":"task is updated succesfully"}
     return make_response(jsonify(msg),200)
 
+def _assignTaskMembers(data):
+    u_task = Task.update_one(
+        {"task_code":data['task_code']},
+        {
+            "$set":{"assigned_to":data['members']}
+        }
+    )
+    if u_task.matched_count>0:
+        msg = {"message":" assigned members for the task has been updated  succesfully"}
+        return make_response(jsonify(msg),200)
+
+    msg = {"message":"invalid task code"}
+    return make_response(jsonify(msg),400)
+
+
 def _addTask(data):
     project = Project.find_one({'project_code':data['project_code']})
     if not project:
@@ -646,7 +661,8 @@ def _addTask(data):
         "task":data['task'],
         "project_code":data['project_code'],
         "completed":0,
-        "status":0
+        "status":0,
+        "assigned_to":[]
         }
     task['task_code'] = random_generator(Task,'task_code')
     t_copy = task.copy()

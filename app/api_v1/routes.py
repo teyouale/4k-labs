@@ -477,6 +477,21 @@ def addTask():
         return jsonify(msg),400
     return db_operations._addTask(req)
 
+@api_v1.route('/api_v1/task/assign_member', methods = ['PUT'])
+@role_required([roleMap.get('team_leader')])
+def assign_member():
+    req = request.get_json()
+    #  if it is none
+   
+    if not req:
+        msg = {"message":"invalid input"}
+        return jsonify(msg),400
+    
+    if  req.get('task_code',None) == None or req.get('members',None)==None:
+        msg = {"message":"all input are required"}
+        return jsonify(msg),400
+    return db_operations._assignTaskMembers(req)
+
 '''
 delete a task 
 '''
