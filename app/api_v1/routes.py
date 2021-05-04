@@ -412,7 +412,7 @@ def update_project_members():
     elif req.get('project_code',None) == None:
         return jsonify(msg="please provide a valid project code"),400
     if req.get('team_members',None) == None or len(req.get('team_members')) == 0:
-        return jsonify(msg="no team member is provided please provide at least one"),400
+        return jsonify(msg="no team member is provided please provide at least one member for the project"),400
     return db_operations._update_project_members(req)
 
 '''

@@ -528,10 +528,17 @@ def _get_project(project_code):
 
 '''
 update project members
+makes sure all the members that are assigned to the task are on the new update
 '''
 
 def _update_project_members(data):
-    print(data)
+    tasks = Task.find({'project_code':data['project_code']})
+    all_members = [[member for member in task['assigned_to']] for task in tasks]
+    all_members = sum(all_members,[])
+    for member in all_members:
+        if member not in data['team_members']:
+            msg = {'message':"can't remove members that are already assigned to tasks"}
+            return make_response(jsonify(msg),400)
     project = Project.update_one(
         {'project_code':data['project_code']},
         {
@@ -542,9 +549,9 @@ def _update_project_members(data):
         )
     
     if project.matched_count == 0:
-        msg = {"msg":"invalid project code"}
+        msg = {"message":"invalid project code"}
         return make_response(jsonify(msg),400)
-    msg = {"msg":"project members has been updated successfully"}
+    msg = {"message":"project members has been updated successfully"}
     return make_response(jsonify(msg),200)
 
 
