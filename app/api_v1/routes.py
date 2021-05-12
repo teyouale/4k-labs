@@ -398,6 +398,13 @@ def create_new_project():
 def get_projects():
     return db_operations._get_all_projects()
 
+'''
+this route returns all the projects with out including the tasks
+'''
+@api_v1.route('/api_v1/_get_all_info')
+def _get_all_info():
+    return db_operations._get_all_info()
+
 
 @api_v1.route('/api_v1/get_projects/<project_code>')
 def get_project(project_code):
@@ -457,9 +464,6 @@ def updateTask():
         msg = {"message":"all inputs are required"}
         return jsonify(msg),400
     return db_operations._UpdateTaskStatus(req['task_code'],req['status'])
-
-
-
 
 @api_v1.route('/api_v1/addTask', methods = ['POST'])
 @role_required([v for k,v in roleMap.items()])
