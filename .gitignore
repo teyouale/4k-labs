@@ -3,5 +3,5 @@
 events
 profile
 thumbnails
-**/templates
-**/static
+# **/templates
+# **/static

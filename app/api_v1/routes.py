@@ -123,7 +123,7 @@ def register_admin():
         'password':req.get('password'),
         'superadmin':True,
     }
-    return "db_operations._register_admin(data)"
+    return db_operations._register_admin(data)
 
 '''
     To register only username,password Full Name and Token are needed
