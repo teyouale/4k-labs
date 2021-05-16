@@ -108,7 +108,7 @@ def register_admin():
     if not req:
         msg = {"message":"invalid input"}
         return jsonify(msg),400
-    if not (req.get('username',None) and req.get('password',None)):
+    if req.get('email',None)==None:
         msg = {"message":"all information is not provided"}
         return jsonify(msg),400
     data = {
@@ -119,8 +119,7 @@ def register_admin():
         'Role':4,
         'Division':'',
         'projects':None,
-        'username':req.get('username'),
-        'password':req.get('password'),
+        'username':req.get('email'),
         'superadmin':True,
     }
     return db_operations._register_admin(data)
@@ -137,7 +136,7 @@ def register_member():
     if not req:
         msg = {"message":"invalid input"}
         return jsonify(msg),400
-    if not (req.get('username',None) and req.get('password',None) and req.get('fullname',None) and req.get('token',None)):
+    if not (req.get('email',None) and req.get('token',None)):
         msg = {"message":"all information is not provided"}
         return jsonify(msg),400
     data = {
@@ -148,8 +147,7 @@ def register_member():
         'Role':0,
         'Division':'',
         'projects':None,
-        'username':req.get('username'),
-        'password':req.get('password'),
+        'username':req.get('email'),
         'fullname':req.get('fullname'),
         'token':req.get('token'),
         'superadmin': False
@@ -194,7 +192,6 @@ def adminlogin():
         return jsonify(msg),400
     try:
         idinfo = id_token.verify_oauth2_token(req['id_token'], requests.Request(),current_app.config['CLIENT_ID'])
-        data,authenticated = db_operations._check_username_password_admin(idinfo['email'])
     except ValueError:
         return jsonify({"message":"Could not verify audience."}),400
 
@@ -206,7 +203,7 @@ def adminlogin():
         refresh_token = create_refresh_token(identity=data['user_id'])
         return jsonify(access_token=access_token,user= data,refresh_token=refresh_token),200
     else:
-        return data,404
+        return jsonify(data),404
 
 
 '''
@@ -219,17 +216,23 @@ def login():
     if not req:
         msg = {"message":"invalid input"}
         return jsonify(msg),400
-    if not req.get('username') or len(req.get('password'))<1:
+    if req.get('id_token',None) == None:
         msg = {"message":"invalid input"}
         return jsonify(msg),400
-    data,passed = db_operations._check_username_password(req)
-    if passed==True:
+
+    try:
+        idinfo = id_token.verify_oauth2_token(req['id_token'], requests.Request(),current_app.config['CLIENT_ID'])
+    except ValueError:
+        return jsonify({"message":"Could not verify audience."}),400
+
+    data,authenticated = db_operations._check_username_password(idinfo['email'])
+    if authenticated:
         additional_claims = data
         access_token = create_access_token(identity=data['user_id'],additional_claims=additional_claims)
         refresh_token = create_refresh_token(identity=data['user_id'])
         return jsonify(access_token=access_token,user= data,refresh_token=refresh_token),200
     else:
-        return data,404
+        return jsonify(data),404
 '''
     TODO:
         [] make sure first if the user is logged in before updating any information
