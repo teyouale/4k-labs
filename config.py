@@ -17,6 +17,9 @@ class Config:
     JWT_SECRET_KEY = os.environ.get('SECRET_KEY') or 'anything but string'
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+
+    # google auth
+    CLIENT_ID = "475271500037-5gg9viio8pftqjs1ra3aq9f3ss8f0nru.apps.googleusercontent.com"
 class development_config(Config):
     DEBUG=True
 

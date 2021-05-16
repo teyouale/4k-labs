@@ -7,7 +7,7 @@ import os
 import time
 from . import *
 from functools import wraps
-
+from .. import requests,id_token
 
 
 
@@ -189,17 +189,26 @@ def adminlogin():
     if not req:
         msg = {"message":"invalid input"}
         return jsonify(msg),400
-    if not (req.get('username',None) and req.get('password',None)):
+    if req.get('id_token',None) == None:
         msg = {"message":"invalid input"}
         return jsonify(msg),400
-    data,passed = db_operations._check_username_password_admin(req)
-    if passed==True:
-        additional_claims = data
-        access_token = create_access_token(identity=data['user_id'],additional_claims=additional_claims)
-        refresh_token = create_refresh_token(identity=data['user_id'])
-        return jsonify(access_token=access_token,user= data,refresh_token=refresh_token),200
-    else:
-        return data,404
+
+    try:
+        idinfo = id_token.verify_oauth2_token(req.get(id_token), requests.Request(), current_app.config['CLIENT_ID'])
+        print(idinfo)
+        return jsonify(idinfo),200
+    except ValueError:
+        pass
+
+
+    # data,passed = db_operations._check_username_password_admin(req)
+    # if passed==True:
+    #     additional_claims = data
+    #     access_token = create_access_token(identity=data['user_id'],additional_claims=additional_claims)
+    #     refresh_token = create_refresh_token(identity=data['user_id'])
+    #     return jsonify(access_token=access_token,user= data,refresh_token=refresh_token),200
+    # else:
+    #     return data,404
 
 
 '''
