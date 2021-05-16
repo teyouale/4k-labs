@@ -192,37 +192,21 @@ def adminlogin():
     if req.get('id_token',None) == None:
         msg = {"message":"invalid input"}
         return jsonify(msg),400
-
     try:
         idinfo = id_token.verify_oauth2_token(req['id_token'], requests.Request(),current_app.config['CLIENT_ID'])
+        data,authenticated = db_operations._check_username_password_admin(idinfo['email'])
     except ValueError:
-        return jsonify("idinfo"),400
-    data = {
-            "Discription": "",
-            "Division": "",
-            "Github": "",
-            "Linkden": "",
-            "Role": 4,
-            "profile_picture": idinfo['picture'],
-            "projects": None,
-            "superadmin": True,
-            "user_id": idinfo['sub'],
-            "username": idinfo['given_name']
-        }
-    additional_claims = data
-    access_token = create_access_token(identity=data['user_id'],additional_claims=additional_claims)
-    refresh_token = create_refresh_token(identity=data['user_id'])
-    return jsonify(access_token=access_token,user= data,refresh_token=refresh_token),200
+        return jsonify({"message":"Could not verify audience."}),400
 
-
-    # data,passed = db_operations._check_username_password_admin(req)
-    # if passed==True:
-    #     additional_claims = data
-        # access_token = create_access_token(identity=data['user_id'],additional_claims=additional_claims)
-        # refresh_token = create_refresh_token(identity=data['user_id'])
-        # return jsonify(access_token=access_token,user= data,refresh_token=refresh_token),200
-    # else:
-    #     return data,404
+    data,authenticated = db_operations._check_username_password_admin(idinfo['email'])
+    if authenticated:
+        data['profile_picture'] = idinfo['picture']
+        additional_claims = data
+        access_token = create_access_token(identity=data['user_id'],additional_claims=additional_claims)
+        refresh_token = create_refresh_token(identity=data['user_id'])
+        return jsonify(access_token=access_token,user= data,refresh_token=refresh_token),200
+    else:
+        return data,404
 
 
 '''

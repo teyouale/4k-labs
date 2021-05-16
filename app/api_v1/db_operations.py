@@ -798,22 +798,20 @@ login checker for admin
 '''
 
 
-def _check_username_password_admin(req):
-    s_admin = SuperAdmin.find_one({'username': str(req.get('username', None))})
+def _check_username_password_admin(email):
+    s_admin = SuperAdmin.find_one({'username': email})
+    passed = False
     subset = ['password', '_id']
     if s_admin:
-        if check_password_hash(s_admin.get('password'), str(req.get('password'))):
-            s_admin = _remover(subset, s_admin)
-            # add superadmin since it is a response
-            s_admin['superadmin'] = True
-            passed = True
-            return s_admin, passed
-        else:
-            msg = {"message": "incorrect password"}
-            return make_response(jsonify(msg)), 404
+        s_admin = _remover(subset, s_admin)
+        # add superadmin since it is a response
+        s_admin['superadmin'] = True
+        passed = True
+        return s_admin, passed
     else:
-        msg = {"message": "username doesn't exist"}
-        return make_response(jsonify(msg)), 404
+        msg = {"message": "this email address is not registerd"}
+        passed = False
+        return msg,passed
 
 
 '''
