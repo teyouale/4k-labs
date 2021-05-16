@@ -257,41 +257,28 @@ def _update_admin_profile(data):
 
 
 def _update_information(data, user_id):
-    # get user information using user id first
+    # get the user using the user id and update the information
     # check if passwork is always reqired  to do the update information
     member = Member.find_one({'user_id': user_id})
     if member:
-        if data.get('password') != None:
-            if check_password_hash(member.get('password'), str(data.get('password'))):
-                del data['password']
-                if data.get('image') != None:
-                    profile_path = _update_profile_picture(
-                        data['image'], data['user_id'])
-                    data['profile_picture'] = profile_path
-                    del data['image']
-                if data.get('newpassword') != None:
-                    data['password'] = generate_password_hash(
-                        data['newpassword'])
-                    del data['newpassword']
-                data['Division'] = member['Division']
-                data['user_id'] = user_id
-                data['profile_picture'] = member['profile_picture']
-                update_member = Member.update_one(
-                    {'user_id': user_id},
-                    {"$set": data}
-                )
-                if update_member.matched_count > 0:
-                    msg = {"message": "information has been updated succesfuly"}
-                    return make_response(jsonify({'message': msg, 'data': data}), 200)
-                else:
-                    msg = {"message": "username doesn't exist"}
-                    return make_response(jsonify(msg), 500)
-            else:
-                msg = {'message': 'incorrect password'}
-                return make_response(jsonify(msg), 401)
+        if data.get('image') != None:
+            profile_path = _update_profile_picture(data['image'], user_id)
+            data['profile_picture'] = profile_path
+            del data['image']
+        data['Division'] = member['Division']
+        data['user_id'] = user_id
+        update_member = Member.update_one(
+            {'user_id': user_id},
+            {"$set": data}
+        )
+        data = Member.find_one({'user_id': user_id})
+        del data['_id']
+        if update_member.matched_count > 0:
+            msg = {"message": "information has been updated succesfuly"}
+            return make_response(jsonify({'message': msg, 'data': data}), 200)
         else:
-            msg = {'message', 'password field is empty'}
-            return make_response(jsonify(msg), 400)
+            msg = {"message": "username doesn't exist"}
+            return make_response(jsonify(msg), 500)
     else:
         msg = {'message': "user id doesn't exits"}
         return make_response(jsonify(msg), 404)

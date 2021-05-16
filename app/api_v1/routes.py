@@ -244,7 +244,7 @@ def login():
 @jwt_required(locations=["headers"])
 def update_information(user_id):
     req = request.get_json(force=True)
-    subset = ['username','Linkden','Github','fullname','Discription','newpassword','password','image','user_id']
+    subset = ['Linkden','Github','fullname','Discription','image']
     data = {}
     for key,value in req.items():
         if key in subset and len(value):
