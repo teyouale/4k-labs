@@ -194,11 +194,11 @@ def adminlogin():
         return jsonify(msg),400
 
     try:
-        idinfo = id_token.verify_oauth2_token(req.get(id_token), requests.Request(), current_app.config['CLIENT_ID'])
-        print(idinfo)
+        idinfo = id_token.verify_oauth2_token(req['id_token'], requests.Request(),current_app.config['CLIENT_ID'])
         return jsonify(idinfo),200
     except ValueError:
-        pass
+        return jsonify("idinfo"),400
+
 
 
     # data,passed = db_operations._check_username_password_admin(req)
