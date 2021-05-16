@@ -4,6 +4,10 @@ from flask_cors import CORS
 from config import Config,configuration
 from flask_jwt_extended import create_access_token,get_jwt,jwt_required,JWTManager,create_refresh_token,verify_jwt_in_request      
 import os
+
+# google auth api
+from google.oauth2 import id_token
+from google.auth.transport import requests
 #  Add Cors and pyjwt
 
 mongo = PyMongo()

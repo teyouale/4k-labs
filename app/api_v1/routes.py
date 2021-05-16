@@ -7,7 +7,7 @@ import os
 import time
 from . import *
 from functools import wraps
-
+from .. import requests,id_token
 
 
 
@@ -123,7 +123,7 @@ def register_admin():
         'password':req.get('password'),
         'superadmin':True,
     }
-    return "db_operations._register_admin(data)"
+    return db_operations._register_admin(data)
 
 '''
     To register only username,password Full Name and Token are needed
@@ -189,11 +189,18 @@ def adminlogin():
     if not req:
         msg = {"message":"invalid input"}
         return jsonify(msg),400
-    if not (req.get('username',None) and req.get('password',None)):
+    if req.get('id_token',None) == None:
         msg = {"message":"invalid input"}
         return jsonify(msg),400
-    data,passed = db_operations._check_username_password_admin(req)
-    if passed==True:
+    try:
+        idinfo = id_token.verify_oauth2_token(req['id_token'], requests.Request(),current_app.config['CLIENT_ID'])
+        data,authenticated = db_operations._check_username_password_admin(idinfo['email'])
+    except ValueError:
+        return jsonify({"message":"Could not verify audience."}),400
+
+    data,authenticated = db_operations._check_username_password_admin(idinfo['email'])
+    if authenticated:
+        data['profile_picture'] = idinfo['picture']
         additional_claims = data
         access_token = create_access_token(identity=data['user_id'],additional_claims=additional_claims)
         refresh_token = create_refresh_token(identity=data['user_id'])
