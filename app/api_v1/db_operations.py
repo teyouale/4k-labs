@@ -32,6 +32,8 @@ def _delteAll():
     Application.delete_many({})
     Project.delete_many({})
     Task.delete_many({})
+    SuperAdmin.delete_many({})
+    Event.delete_many({})
     return make_response(jsonify(msg="all deleted"))
 
 
@@ -111,23 +113,22 @@ def _register_admin(data):
             "message": 'username already exit'
         }
     else:
-        data['password'] = generate_password_hash(data['password'])
-
-    user_id = id_generator(12)
-    members = SuperAdmin.find({'user_id': user_id}).count()
-    while members != 0:
+        # generate user id for the admin
         user_id = id_generator(12)
         members = SuperAdmin.find({'user_id': user_id}).count()
+        while members != 0:
+            user_id = id_generator(12)
+            members = SuperAdmin.find({'user_id': user_id}).count()
+        
+        data['user_id'] = user_id
+        register_member = SuperAdmin.insert_one(data)
 
-    data['user_id'] = user_id
-    register_member = SuperAdmin.insert_one(data)
-
-    if register_member.inserted_id:
-        msg = {'message': 'succesfully registerd'}
-        return make_response(jsonify(msg), 200)
-    else:
-        msg = {"message": "Error registering the user"}
-        return make_response(jsonify(msg), 500)
+        if register_member.inserted_id:
+            msg = {'message': 'succesfully registerd'}
+            return make_response(jsonify(msg), 200)
+        else:
+            msg = {"message": "Error registering the user"}
+            return make_response(jsonify(msg), 500)
 
 
 '''
@@ -140,39 +141,37 @@ def _register_admin(data):
 def _register_member(data):
     num = Member.find({"username": data["username"]}).count()
     if(num > 0):
-        return {
-            "message": 'username already exit'
-        }
+        msg = {"message": 'username already exit'}
+        return make_response(jsonify(msg)),409
     else:
-        data['password'] = generate_password_hash(data['password'])
-    token = Token.find_one({'token': data['token']})
-    if token:
-        user_id = id_generator(12)
-        members = Member.find({'user_id': user_id}).count()
-        while members != 0:
+        token = Token.find_one({'token': data['token']})
+        if token:
             user_id = id_generator(12)
             members = Member.find({'user_id': user_id}).count()
+            while members != 0:
+                user_id = id_generator(12)
+                members = Member.find({'user_id': user_id}).count()
 
-        data['user_id'] = user_id
-        data['Division'] = _get_division(data['token'])
-        register_member = Member.insert_one(data)
+            data['user_id'] = user_id
+            data['Division'] = _get_division(data['token'])
+            register_member = Member.insert_one(data)
 
-        if register_member.inserted_id:
-            msg = {'message': 'succesfully registerd'}
-            token = Token.delete_one({'token': data['token']})
-            return make_response(jsonify(msg), 200)
+            if register_member.inserted_id:
+                msg = {'message': 'succesfully registerd'}
+                token = Token.delete_one({'token': data['token']})
+                return make_response(jsonify(msg), 200)
+            else:
+                msg = {"message": "Error registering the user"}
+                return make_response(jsonify(msg), 500)
         else:
-            msg = {"message": "Error registering the user"}
-            return make_response(jsonify(msg), 500)
-    else:
-        msg = {'message': "invalid token"}
-        return make_response(jsonify(msg), 401)
+            msg = {'message': "invalid token"}
+            return make_response(jsonify(msg), 401)
 
 
 def _list_members():
     members = Member.find({})
     subset = ['password', '_id', 'token']
-    members = [{key: str(value) for key, value in member.items()
+    members = [{key: value for key, value in member.items()
                 if key not in subset} for member in members]
     res = make_response(jsonify({'members': members}), 200)
     return res
@@ -182,7 +181,7 @@ def _member_information(user_id):
     info = Member.find_one({'user_id': user_id})
     if info:
         subset = ['password', 'token', '_id']
-        info = [{key: str(value)
+        info = [{key: value
                  for key, value in info.items() if key not in subset}]
         info = info[0]
         return make_response(jsonify(info), 200)
@@ -258,41 +257,28 @@ def _update_admin_profile(data):
 
 
 def _update_information(data, user_id):
-    # get user information using user id first
+    # get the user using the user id and update the information
     # check if passwork is always reqired  to do the update information
     member = Member.find_one({'user_id': user_id})
     if member:
-        if data.get('password') != None:
-            if check_password_hash(member.get('password'), str(data.get('password'))):
-                del data['password']
-                if data.get('image') != None:
-                    profile_path = _update_profile_picture(
-                        data['image'], data['user_id'])
-                    data['profile_picture'] = profile_path
-                    del data['image']
-                if data.get('newpassword') != None:
-                    data['password'] = generate_password_hash(
-                        data['newpassword'])
-                    del data['newpassword']
-                data['Division'] = member['Division']
-                data['user_id'] = user_id
-                data['profile_picture'] = member['profile_picture']
-                update_member = Member.update_one(
-                    {'user_id': user_id},
-                    {"$set": data}
-                )
-                if update_member.matched_count > 0:
-                    msg = {"message": "information has been updated succesfuly"}
-                    return make_response(jsonify({'message': msg, 'data': data}), 200)
-                else:
-                    msg = {"message": "username doesn't exist"}
-                    return make_response(jsonify(msg), 500)
-            else:
-                msg = {'message': 'incorrect password'}
-                return make_response(jsonify(msg), 401)
+        if data.get('image') != None:
+            profile_path = _update_profile_picture(data['image'], user_id)
+            data['profile_picture'] = profile_path
+            del data['image']
+        data['Division'] = member['Division']
+        data['user_id'] = user_id
+        update_member = Member.update_one(
+            {'user_id': user_id},
+            {"$set": data}
+        )
+        data = Member.find_one({'user_id': user_id})
+        del data['_id']
+        if update_member.matched_count > 0:
+            msg = {"message": "information has been updated succesfuly"}
+            return make_response(jsonify({'message': msg, 'data': data}), 200)
         else:
-            msg = {'message', 'password field is empty'}
-            return make_response(jsonify(msg), 400)
+            msg = {"message": "username doesn't exist"}
+            return make_response(jsonify(msg), 500)
     else:
         msg = {'message': "user id doesn't exits"}
         return make_response(jsonify(msg), 404)
@@ -804,13 +790,10 @@ def _check_username_password_admin(email):
     subset = ['password', '_id']
     if s_admin:
         s_admin = _remover(subset, s_admin)
-        # add superadmin since it is a response
-        s_admin['superadmin'] = True
         passed = True
         return s_admin, passed
     else:
         msg = {"message": "this email address is not registerd"}
-        passed = False
         return msg,passed
 
 
@@ -819,21 +802,17 @@ login checker
 '''
 
 
-def _check_username_password(req):
-    member = Member.find_one({'username': str(req.get('username', None))})
+def _check_username_password(email):
+    member = Member.find_one({'username': email})
     subset = ['password', '_id']
+    passed = False
     if member:
-        if check_password_hash(member.get('password'), str(req.get('password'))):
-            member = _remover(subset, member)
-            member['superadmin'] = False
-            passed = True
-            return member, passed
-        else:
-            msg = {"message": "incorrect password"}
-            return make_response(jsonify(msg)), 404
+        member = _remover(subset, member)
+        passed = True
+        return member, passed
     else:
         msg = {"message": "username doesn't exist"}
-        return make_response(jsonify(msg)), 404
+        return msg,passed
 
 
 '''
