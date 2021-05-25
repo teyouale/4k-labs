@@ -6,3 +6,11 @@ export FLASK_APP=lab.py\
 export FLASK_DEBUG=1\
 flask run
 
+## the requirements are
+    flask\
+    flask_pymongo\ 
+    flask_cors\
+    flask_jwt_extended\
+    google-api-python-client\
+    pillow\
+    dnspython\
