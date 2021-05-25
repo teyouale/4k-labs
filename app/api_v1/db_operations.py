@@ -523,6 +523,59 @@ def _get_all_projects():
 
     return make_response(jsonify({"projects": data}), 200)
 
+def _get_all_info_portal(user_id,super_admin):
+    
+    projects = Project.find({})
+    subset = ['_id']
+    data = []
+    for project in projects:
+        _calc_persentage(project['project_code'])
+        pro = {}
+        for k, v in project.items():
+            if k not in subset:
+                pro[k] = v
+
+        tasks = Task.find({"project_code": pro.get('project_code')})
+        tasks = [{k: v for k, v in task.items() if k not in subset}
+                 for task in tasks]
+        pro['tasks'] = tasks
+        members_information = []
+        for user_code in pro['team_members']:
+            members_information.append(_get_teammember_information(user_code))
+        pro['members'] = pro['team_members']
+        pro['team_members'] = members_information
+        data.append(pro)
+
+    members = Member.find({})
+    subset = ['password', '_id', 'token']
+    members = [{key: str(value) for key, value in member.items() if key not in subset} for member in members]
+
+    subset = ['_id']
+    events = Event.find({}).sort([("_id", -1)])
+    events = [{k: v for k, v in event.items() if k not in subset}
+              for event in events]
+    tokens = Token.find({}).sort([("_id", -1)])
+    tokens = [{'token': x['token'], 'Division':x['Division']} for x in tokens]
+
+    info = ""
+    if not super_admin:
+        info = Member.find_one({'user_id': user_id})
+        if info:
+            subset = ['password', 'token', '_id']
+            info = [{key: value
+                    for key, value in info.items() if key not in subset}]
+            info = info[0]
+    if super_admin:
+        info = SuperAdmin.find_one({'user_id': user_id})
+        if info:
+            subset = ['password', 'token', '_id']
+            info = [{key: value
+                    for key, value in info.items() if key not in subset}]
+            info = info[0]
+
+    return make_response(jsonify({"projects": data,"members":members,"events":events,"tokens":tokens,"user":info}), 200)
+
+
 
 def _get_all_info():
     projects = Project.find({})

@@ -194,7 +194,6 @@ def adminlogin():
         idinfo = id_token.verify_oauth2_token(req['id_token'], requests.Request(),current_app.config['CLIENT_ID'])
     except ValueError:
         return jsonify({"message":"Could not verify audience."}),400
-
     data,authenticated = db_operations._check_username_password_admin(idinfo['email'])
     if authenticated:
         data['profile_picture'] = idinfo['picture']
@@ -408,8 +407,18 @@ def create_new_project():
 def get_projects():
     return db_operations._get_all_projects()
 
+
 '''
-this route returns all the projects with out including the tasks
+this route returns all the projects with out including the tasks for the portal
+'''
+@api_v1.route('/api_v1/get_all_info_portal')
+def get_all_info_portal():
+    verify_jwt_in_request()
+    claims = get_jwt()
+    return db_operations._get_all_info_portal(claims['user_id'],claims['superadmin'])
+
+'''
+this route returns all the projects with out including the tasks for the static pages
 '''
 @api_v1.route('/api_v1/_get_all_info')
 def _get_all_info():
@@ -450,7 +459,7 @@ def delete_project(project_code):
 '''
 
 @api_v1.route('/api_v1/updateproject',methods=['POST'])
-@role_required([roleMap.get('team_leader')])
+@role_required([roleMap.get(x) for x in roleMap])
 def update_project():
     req = request.get_json()
     if not req:
