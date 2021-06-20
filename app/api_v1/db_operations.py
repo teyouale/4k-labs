@@ -431,7 +431,7 @@ def random_generator(collection_name, searching_query, size=10):
 
 
 def _create_project(data):
-    if Project.find({'project_title': data["project_title"]}).count():
+    if Project.find({'project_title': data["project_title"]}).a():
         msg = {"message": "the same project title exists"}
         return make_response(jsonify(msg), 409)
     project_code = random_generator(Project, 'project_code', 10)
@@ -446,7 +446,8 @@ def _create_project(data):
         "progress": 0,
         'github': data['github_link'],
         'docs': data['docs_link'],
-        'description': data['description']
+        'description': data['description'],
+        'deadline':data['deadline']
     }
 
     inserted_project = Project.insert_one(project)
