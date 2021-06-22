@@ -857,7 +857,7 @@ login checker
 
 
 def _check_username_password(email):
-    member = Member.find_one({'username': email})
+    member = Member.find_one({'email': email})
     subset = ['password', '_id']
     passed = False
     if member:

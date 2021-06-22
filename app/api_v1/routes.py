@@ -136,7 +136,7 @@ def register_member():
     if not req:
         msg = {"message":"invalid input"}
         return jsonify(msg),400
-    if not (req.get('email',None) and req.get('token',None)):
+    if not (req.get('email',None) and req.get('token',None) and req.get('username',None)):
         msg = {"message":"all information is not provided"}
         return jsonify(msg),400
     data = {
@@ -147,7 +147,8 @@ def register_member():
         'Role':0,
         'Division':'',
         'projects':None,
-        'username':req.get('email'),
+        'username':req.get('username'),
+        'email':req.get('email'),
         'fullname':req.get('fullname'),
         'token':req.get('token'),
         'superadmin': False
@@ -243,7 +244,7 @@ def login():
 @jwt_required(locations=["headers"])
 def update_information(user_id):
     req = request.get_json(force=True)
-    subset = ['Linkden','Github','fullname','Discription','image']
+    subset = ['Linkden','Github','fullname','Discription','image','username']
     data = {}
     for key,value in req.items():
         if key in subset and len(value):
@@ -430,7 +431,7 @@ def get_project(project_code):
     return db_operations._get_project(project_code)
 
 @api_v1.route('/api_v1/project/updatemembers',methods=['POST'])
-@role_required([roleMap.get('team_leader')])
+@jwt_required()
 def update_project_members():
     req = request.get_json()
     if req == None:
