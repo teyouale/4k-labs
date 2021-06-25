@@ -946,7 +946,6 @@ def _delte_event_image(images):
     for image in images:
         path = os.path.join(os.getcwd(), event_path, image)
         os.remove(path)
-        print(path, ' delted successfully')
 
 
 def _delete_event(event_id):
