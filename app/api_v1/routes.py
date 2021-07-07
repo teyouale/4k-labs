@@ -467,7 +467,7 @@ def update_project():
         msg = {'message':'invalid input'}
         return jsonify(msg),400
     if not req.get('project_code',None):
-        msg = {'message':'invalid input'}
+        msg = {'message':'empty project code'}
         return jsonify(msg),400
     return db_operations._update_project(req)
 

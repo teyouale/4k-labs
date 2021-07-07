@@ -431,9 +431,7 @@ def random_generator(collection_name, searching_query, size=10):
 
 
 def _create_project(data):
-    if Project.find({'project_title': data["project_title"]}).a():
-        msg = {"message": "the same project title exists"}
-        return make_response(jsonify(msg), 409)
+
     project_code = random_generator(Project, 'project_code', 10)
 
     division = Member.find_one({"user_id": data["user_id"]})["Division"]
@@ -678,7 +676,7 @@ update project
 
 
 def _update_project(data):
-    subset = ['project_title', 'github', 'docs', 'description', 'project_code']
+    subset = ['project_title', 'github', 'docs', 'description', 'project_code','deadline']
     project = Project.find_one(
         {'project_code': data.get('project_code', None)})
     if not project:
@@ -694,7 +692,8 @@ def _update_project(data):
                 "project_title": data['project_title'],
                 "github": data['github'],
                 "docs": data['docs'],
-                "description": data['description']
+                "description": data['description'],
+                "deadline":data["deadline"]
             }
         }
     )
