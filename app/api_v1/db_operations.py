@@ -928,7 +928,7 @@ def _save_event(image_data, event_id):
     if image.mode != "RGB":
         image = image.convert("RGB")
 
-    img = image.resize((500, 500))
+    img = image.resize((1280, 720))
     img.save(os.path.join(event_path, event_id+'.png'))
 
     return event_id+'.png'
