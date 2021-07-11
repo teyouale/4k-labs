@@ -5,9 +5,17 @@ from config import Config,configuration
 from flask_jwt_extended import create_access_token,get_jwt,jwt_required,JWTManager,create_refresh_token,verify_jwt_in_request      
 import os
 
-# google auth api
-from google.oauth2 import id_token
-from google.auth.transport import requests
+
+# import firebase admin and initialize the cred file
+import firebase_admin
+from firebase_admin import credentials,auth
+# path of the json file 
+filename = "k-lab-317405-firebase-adminsdk-wzb86-edaa1008dc.json";
+cred = credentials.Certificate(filename)
+
+default_app = firebase_admin.initialize_app(cred)
+
+
 #  Add Cors and pyjwt
 
 mongo = PyMongo()
