@@ -14,3 +14,4 @@ flask run
     google-api-python-client\
     pillow\
     dnspython\
+    firebase-admin\

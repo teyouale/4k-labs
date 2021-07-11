@@ -7,7 +7,7 @@ import os
 import time
 from . import *
 from functools import wraps
-from .. import requests,id_token
+from .. import auth
 
 
 
@@ -102,27 +102,27 @@ Register an Admin
 this line will be deleted
 '''
 
-@api_v1.route('/api_v1/register_admin',methods=['POST'])
-def register_admin():
-    req = request.get_json()
-    if not req:
-        msg = {"message":"invalid input"}
-        return jsonify(msg),400
-    if req.get('email',None)==None:
-        msg = {"message":"all information is not provided"}
-        return jsonify(msg),400
-    data = {
-        'profile_picture':'',
-        'Discription':'',
-        'Linkden':'',
-        'Github':'',
-        'Role':4,
-        'Division':'',
-        'projects':None,
-        'username':req.get('email'),
-        'superadmin':True,
-    }
-    return db_operations._register_admin(data)
+# @api_v1.route('/api_v1/register_admin',methods=['POST'])
+# def register_admin():
+#     req = request.get_json()
+#     if not req:
+#         msg = {"message":"invalid input"}
+#         return jsonify(msg),400
+#     if req.get('email',None)==None:
+#         msg = {"message":"all information is not provided"}
+#         return jsonify(msg),400
+#     data = {
+#         'profile_picture':'',
+#         'Discription':'',
+#         'Linkden':'',
+#         'Github':'',
+#         'Role':4,
+#         'Division':'',
+#         'projects':None,
+#         'username':req.get('email'),
+#         'superadmin':True,
+#     }
+#     return db_operations._register_admin(data)
 
 '''
     To register only username,password Full Name and Token are needed
@@ -192,7 +192,7 @@ def adminlogin():
         msg = {"message":"invalid input"}
         return jsonify(msg),400
     try:
-        idinfo = id_token.verify_oauth2_token(req['id_token'], requests.Request(),current_app.config['CLIENT_ID'])
+        idinfo = auth.verify_id_token(req.get("id_token"))
     except ValueError:
         return jsonify({"message":"Could not verify audience."}),400
     data,authenticated = db_operations._check_username_password_admin(idinfo['email'])
@@ -219,12 +219,10 @@ def login():
     if req.get('id_token',None) == None:
         msg = {"message":"invalid input"}
         return jsonify(msg),400
-
     try:
-        idinfo = id_token.verify_oauth2_token(req['id_token'], requests.Request(),current_app.config['CLIENT_ID'])
+        idinfo = auth.verify_id_token(req.get("id_token"))
     except ValueError:
-        return jsonify({"message":"Could not verify audience."}),400
-
+        return jsonify({"message":"Could not verify audience or invalid token."}),400
     data,authenticated = db_operations._check_username_password(idinfo['email'])
     if authenticated:
         additional_claims = data

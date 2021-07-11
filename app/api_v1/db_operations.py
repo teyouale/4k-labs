@@ -139,9 +139,9 @@ def _register_admin(data):
 
 
 def _register_member(data):
-    num = Member.find({"username": data["username"]}).count()
+    num = Member.find({"email": data["email"]}).count()
     if(num > 0):
-        msg = {"message": 'username already exit'}
+        msg = {"message": 'email address already registered'}
         return make_response(jsonify(msg)),409
     else:
         token = Token.find_one({'token': data['token']})
